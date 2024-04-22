@@ -74,7 +74,7 @@ packages:
     source: hosted
     version: "7.0.0"
   fl_chart:
-    dependency: transitive
+    dependency: "direct main"
     description:
       path: "."
       ref: "0.63.0+2"
