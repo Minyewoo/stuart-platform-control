@@ -1,0 +1,31 @@
+name: stuart_platform_control
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.3.1 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  hmi_core:
+    git:
+      url: https://github.com/a-givertzman/hmi_core.git
+      ref: 2.0.0
+  hmi_networking:
+    git:
+      url: https://github.com/a-givertzman/hmi_networking.git
+      ref: 1.1.0
+  hmi_widgets:
+    git:
+      url: https://github.com/a-givertzman/hmi_widgets.git
+      ref: 1.0.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
