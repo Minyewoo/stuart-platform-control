@@ -8,7 +8,7 @@ class RegAddress implements ByteSequence {
   ///
   const factory RegAddress.fromIterable(Iterable<int> bytes) = RegAddress._;
   ///
-  factory RegAddress.fromOffset(int offset) => RegAddress._(offset.uInt16Bytes);
+  factory RegAddress.fromOffset(int offset) => RegAddress._(offset.int16Bytes);
   //
   @override
   Iterable<int> get bytes => _bytes;

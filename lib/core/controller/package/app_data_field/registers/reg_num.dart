@@ -9,7 +9,7 @@ class RegNum implements ByteSequence {
   const factory RegNum.fromIterable(Iterable<int> bytes) = RegNum._;
   //
   ///
-  factory RegNum.fromCount(int count) => RegNum._(count.uInt16Bytes);
+  factory RegNum.fromCount(int count) => RegNum._(count.int16Bytes);
   //
   @override
   Iterable<int> get bytes => _bytes;

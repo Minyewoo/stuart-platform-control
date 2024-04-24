@@ -37,7 +37,6 @@ class SineControlWidget extends StatelessWidget {
             Expanded(
               flex: 1,
               child: Row(
-                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Expanded(
                     child: ParameterSlider(
@@ -46,6 +45,7 @@ class SineControlWidget extends StatelessWidget {
                       minMax: const MinMax(min: 0, max: 1000),
                       divisions: 1000,
                       sliderValueBuilder: (sine) => sine.amplitude,
+                      displayValueBuilder: (sine) => sine.amplitude.toStringAsFixed(0),
                       valueUnit: ' мм',
                       onChanged: _changeAmplitude,
                     ),
@@ -74,6 +74,21 @@ class SineControlWidget extends StatelessWidget {
                       onChanged: _changePhaseShift,
                     ),
                   ),
+                  Expanded(
+                    child: ValueListenableBuilder(
+                      valueListenable: _sineNotifier,
+                      builder: (context, sine, child) => ParameterSlider(
+                        label: 'Базовое значение',
+                        valueNotifier: _sineNotifier,
+                        minMax: MinMax(min: _sineNotifier.value.amplitude, max: 3000-_sineNotifier.value.amplitude),
+                        divisions: (3000-_sineNotifier.value.amplitude*2).round(),
+                        sliderValueBuilder: (sine) => sine.baseline,
+                        displayValueBuilder: (sine) => sine.baseline.toStringAsFixed(0),
+                        valueUnit: ' мм',
+                        onChanged: _changeBaseline,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -84,6 +99,7 @@ class SineControlWidget extends StatelessWidget {
             sineNotifier: _sineNotifier,
             minMaxNotifier: _minMaxNotifier,
             periodWindow: 120,
+            pointsCountFactor: 30,
           ),
         ),
       ],
@@ -93,6 +109,12 @@ class SineControlWidget extends StatelessWidget {
   void _changeAmplitude(double value) {
     _sineNotifier.value = _sineNotifier.value.copyWith(
       amplitude: value,
+    );
+  }
+  //
+  void _changeBaseline(double value) {
+    _sineNotifier.value = _sineNotifier.value.copyWith(
+      baseline: value,
     );
   }
   //

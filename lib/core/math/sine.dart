@@ -7,27 +7,31 @@ class Sine {
   final double amplitude;
   final double period;
   final double phaseShift;
+  final double baseline;
   /// 
   /// Parameterized sine function
   const Sine({
     this.amplitude = 1.0, 
     this.period = 2*pi,
     this.phaseShift = 0.0,
-  });
+    double? baseline,
+  }) : baseline = baseline != null ? (amplitude > baseline ? amplitude : baseline) : amplitude;
   ///
   /// Create new instance of [Sine] with slightly different parameters.
   Sine copyWith({
     double? amplitude, 
     double? period,
     double? phaseShift,
+    double? baseline,
   }) => Sine(
     amplitude: amplitude ?? this.amplitude,
     period: period ?? this.period,
     phaseShift: phaseShift ?? this.phaseShift,
+    baseline: baseline ?? (this.baseline < (amplitude ?? this.amplitude) ? (amplitude ?? this.amplitude) : this.baseline),
   );
   /// 
   /// Compute sine value of [t].
-  double of(double t) => amplitude * sin(2*pi*t/period + phaseShift);
+  double of(double t) => amplitude * sin(2*pi*t/period + phaseShift) + baseline;
 
   ///
   /// Compute minimum and maximum values of the sine function.
@@ -45,13 +49,14 @@ class Sine {
   }
   //
   @override
-  int get hashCode => amplitude.hashCode ^ period.hashCode ^ phaseShift.hashCode;
+  int get hashCode => amplitude.hashCode ^ period.hashCode ^ phaseShift.hashCode ^ baseline.hashCode;
   //
   @override
   bool operator ==(Object other) {
     return other is Sine
       && amplitude == other.amplitude
       && period == other.period
-      && phaseShift == other.phaseShift;
+      && phaseShift == other.phaseShift
+      && baseline == other.baseline;
   }
 }

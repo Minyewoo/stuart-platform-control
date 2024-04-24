@@ -20,6 +20,17 @@ class AppControlField implements ByteSequence {
     .followedBy(functionCode.bytes)
     .followedBy(objectChannel.bytes),
   );
+  /// 
+  /// With default confirm code and no pass code
+  AppControlField.def({
+    required FunctionCode functionCode, 
+    required ObjectChannel objectChannel,
+  }) : this._(
+    const ConfirmCode.def().bytes
+    .followedBy(const PassCode.none().bytes)
+    .followedBy(functionCode.bytes)
+    .followedBy(objectChannel.bytes),
+  );
   ///
   const factory AppControlField.fromIterable(Iterable<int> bytes) = AppControlField._;
   ///

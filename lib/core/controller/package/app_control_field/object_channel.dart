@@ -3,8 +3,9 @@ import 'package:stuart_platform_control/core/controller/package/byte_sequence.da
 class ObjectChannel implements ByteSequence {
   final Iterable<int> _bytes;
   ///
-  const ObjectChannel._(this._bytes) : assert(_bytes.length==2);
-  ///
+  const ObjectChannel._(this._bytes);
+  /// 
+  /// Should contain 2 bytes
   const factory ObjectChannel.fromIterable(Iterable<int> bytes) = ObjectChannel._;
   //
   @override

@@ -1,35 +1,51 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:stuart_platform_control/core/controller/mdbox_controller.dart';
 import 'package:stuart_platform_control/core/math/min_max.dart';
 import 'package:stuart_platform_control/core/math/sine.dart';
+import 'package:stuart_platform_control/core/platform/stuart_platform.dart';
 import 'package:stuart_platform_control/presentation/platform_control/widgets/min_max_notifier.dart';
 import 'package:stuart_platform_control/presentation/platform_control/widgets/sine_notifier.dart';
 import 'package:stuart_platform_control/presentation/platform_control/widgets/sine_control_widget.dart';
 ///
 class PlatformControlPage extends StatefulWidget {
+  final Duration _controlFrequency;
+  final MdboxController _controller;
   ///
-  const PlatformControlPage({super.key});
+  const PlatformControlPage({
+    super.key,
+    required MdboxController controller,
+    Duration controlFrequency = const Duration(milliseconds: 500),
+  }) : 
+    _controller = controller,
+    _controlFrequency = controlFrequency;
   //
   @override
   State<PlatformControlPage> createState() => _PlatformControlPageState();
 }
 ///
 class _PlatformControlPageState extends State<PlatformControlPage> {
+  late bool _isPlatformMoving;
   late final SineNotifier _axis1SineNotifier;
   late final SineNotifier _axis2SineNotifier;
   late final SineNotifier _axis3SineNotifier;
   late final MinMaxNotifier _minMaxNotifier;
+  late final StuartPlatform _platform;
   //
   @override
   void initState() {
+    _isPlatformMoving = false;
     _axis1SineNotifier = SineNotifier(
-      sine: const Sine(),
+      sine: const Sine(
+        baseline: 200,
+      ),
     );
     _axis2SineNotifier = SineNotifier(
       sine: const Sine(
         amplitude: 2,
         period: pi,
         phaseShift: pi/2,
+        baseline: 200,
       ),
     );
     _axis3SineNotifier = SineNotifier(
@@ -37,6 +53,7 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
         amplitude: 0.5,
         period: pi/2,
         phaseShift: pi,
+        baseline: 200,
       ),
     );
     _minMaxNotifier = MinMaxNotifier();
@@ -44,6 +61,23 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
     _axis1SineNotifier.addListener(_tryRecomputeMinMax);
     _axis2SineNotifier.addListener(_tryRecomputeMinMax);
     _axis3SineNotifier.addListener(_tryRecomputeMinMax);
+    _platform = StuartPlatform(
+      xSineNotifier: _axis1SineNotifier,
+      ySineNotifier: _axis2SineNotifier,
+      zSineNotifier: _axis3SineNotifier,
+      controlFrequency: widget._controlFrequency,
+      controller: widget._controller,
+      onStart: () {
+        setState(() {
+          _isPlatformMoving = true;
+        });
+      },
+      onStop: () {
+        setState(() {
+          _isPlatformMoving = false;
+        });
+      }
+    );
     super.initState();
   }
   //
@@ -73,16 +107,19 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: FilledButton.icon(
-              onPressed: () {}, 
-              icon: const Icon(Icons.save), 
-              label: const Text('Загрузить на контроллер'),
+            child: OutlinedButton.icon(
+              onPressed: _isPlatformMoving ? () {} : null,
+              icon: Icon(
+                Icons.circle, 
+                color: _isPlatformMoving ? Colors.greenAccent : null,
+              ), 
+              label: const Text('Движение в процессе'),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: FilledButton.icon(
-              onPressed: () {}, 
+              onPressed: _platform.startFluctuations, 
               icon: const Icon(Icons.play_arrow), 
               label: const Text('Начать движение'),
             ),
@@ -90,7 +127,7 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: FilledButton.icon(
-              onPressed: () {}, 
+              onPressed: _platform.stop, 
               icon: const Icon(Icons.stop), 
               label: const Text('Остановить движение'),
             ),
@@ -106,7 +143,7 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
               child: Padding(
                 padding: chartsPadding,
                 child: SineControlWidget(
-                  title: 'Ось 1',
+                  title: 'Ось 1 (X)',
                   sineNotifier: _axis1SineNotifier,
                   minMaxNotifier: _minMaxNotifier,
                 ),
@@ -116,7 +153,7 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
               child: Padding(
                 padding: chartsPadding,
                 child: SineControlWidget(
-                  title: 'Ось 2',
+                  title: 'Ось 2 (Y)',
                   sineNotifier: _axis2SineNotifier,
                   minMaxNotifier: _minMaxNotifier,
                 ),
@@ -126,7 +163,7 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
               child: Padding(
                 padding: chartsPadding,
                 child: SineControlWidget(
-                  title: 'Ось 3',
+                  title: 'Ось 3 (Z)',
                   sineNotifier: _axis3SineNotifier,
                   minMaxNotifier: _minMaxNotifier,
                 ),

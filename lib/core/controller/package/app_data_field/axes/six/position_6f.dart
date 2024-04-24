@@ -16,12 +16,12 @@ class Position6f implements ByteSequence {
     required int v,
     required int w,
   }) => Position6f._([
-    ...x.uInt32Bytes,
-    ...y.uInt32Bytes,
-    ...z.uInt32Bytes,
-    ...u.uInt32Bytes,
-    ...v.uInt32Bytes,
-    ...w.uInt32Bytes,
+    ...x.int32Bytes,
+    ...y.int32Bytes,
+    ...z.int32Bytes,
+    ...u.int32Bytes,
+    ...v.int32Bytes,
+    ...w.int32Bytes,
   ]);
   //
   @override

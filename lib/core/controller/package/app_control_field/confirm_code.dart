@@ -3,8 +3,9 @@ import 'package:stuart_platform_control/core/controller/package/byte_sequence.da
 class ConfirmCode implements ByteSequence {
   final Iterable<int> _bytes;
   ///
-  const ConfirmCode._(this._bytes) : assert(_bytes.length==2);
-  ///
+  const ConfirmCode._(this._bytes);
+  /// 
+  /// Should contain 2 bytes
   const factory ConfirmCode.fromIterable(Iterable<int> bytes) = ConfirmCode._;
   ///
   /// Default confirm code

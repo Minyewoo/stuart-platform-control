@@ -8,6 +8,19 @@ abstract interface class ByteSequence {
   Iterable<int> get bytes;
 }
 
+extension HexString on ByteSequence {
+  String toHexString() {
+    return bytes
+      .map(
+        (byte) => byte
+          .toRadixString(16)
+          .padLeft(2,'0'),
+      )
+      .toList()
+      .toString();
+  }
+}
+
 ///
 class _IterableByteSequence implements ByteSequence {
   final Iterable<int> _iterable;

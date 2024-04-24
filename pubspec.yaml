@@ -25,6 +25,7 @@ dependencies:
     git:
       url: https://github.com/a-givertzman/fl_chart.git
       ref: 0.63.0+2
+  shared_preferences: ^2.2.3
 
 dev_dependencies:
   flutter_test:

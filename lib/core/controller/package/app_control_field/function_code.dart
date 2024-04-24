@@ -3,8 +3,9 @@ import 'package:stuart_platform_control/core/controller/package/byte_sequence.da
 class FunctionCode implements ByteSequence {
   final Iterable<int> _bytes;
   ///
-  const FunctionCode._(this._bytes) : assert(_bytes.length==2);
-  ///
+  const FunctionCode._(this._bytes);
+  /// 
+  /// Should contain 2 bytes
   const factory FunctionCode.fromIterable(Iterable<int> bytes) = FunctionCode._;
   //
   @override

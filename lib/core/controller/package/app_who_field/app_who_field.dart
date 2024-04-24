@@ -4,8 +4,9 @@ import 'package:stuart_platform_control/core/controller/package/byte_sequence.da
 class AppWhoField implements ByteSequence {
   final Iterable<int> _bytes;
   ///
-  const AppWhoField._(this._bytes) : assert(_bytes.length==4);
-  ///
+  const AppWhoField._(this._bytes);
+  /// 
+  /// Should contain 4 bytes
   const factory AppWhoField.fromIterable(Iterable<int> bytes) = AppWhoField._;
   ///
   AppWhoField({
