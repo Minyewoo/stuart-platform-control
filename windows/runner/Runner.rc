@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "ru.tkz-cranes" "\0"
-            VALUE "FileDescription", "stuart_platform_control" "\0"
+            VALUE "FileDescription", "stewart_platform_control" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "stuart_platform_control" "\0"
+            VALUE "InternalName", "stewart_platform_control" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2024 ru.tkz-cranes. All rights reserved." "\0"
-            VALUE "OriginalFilename", "stuart_platform_control.exe" "\0"
-            VALUE "ProductName", "stuart_platform_control" "\0"
+            VALUE "OriginalFilename", "stewart_platform_control.exe" "\0"
+            VALUE "ProductName", "stewart_platform_control" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
