@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:stuart_platform_control/core/math/min_max.dart';
+import 'package:stewart_platform_control/core/math/min_max.dart';
 ///
 class MinMaxNotifier extends ValueNotifier<MinMax> {
   ///

@@ -1,9 +1,9 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:stuart_platform_control/core/math/min_max.dart';
-import 'package:stuart_platform_control/core/math/sine.dart';
-import 'package:stuart_platform_control/presentation/platform_control/widgets/parameter_slider.dart';
-import 'package:stuart_platform_control/presentation/platform_control/widgets/sine_chart.dart';
+import 'package:stewart_platform_control/core/math/min_max.dart';
+import 'package:stewart_platform_control/core/math/sine.dart';
+import 'package:stewart_platform_control/presentation/platform_control/widgets/parameter_slider.dart';
+import 'package:stewart_platform_control/presentation/platform_control/widgets/sine_chart.dart';
 ///
 class SineControlWidget extends StatelessWidget {
   final String _title;

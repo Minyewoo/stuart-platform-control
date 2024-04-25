@@ -1,6 +1,6 @@
 
 import 'package:flutter/material.dart';
-import 'package:stuart_platform_control/core/math/min_max.dart';
+import 'package:stewart_platform_control/core/math/min_max.dart';
 ///
 class ParameterSlider<T> extends StatelessWidget {
   final int? _divisions;
@@ -48,6 +48,8 @@ class ParameterSlider<T> extends StatelessWidget {
                   child: Text(
                     _label,
                     textAlign: TextAlign.end,
+                    maxLines: 1,
+                    overflow: TextOverflow.fade,
                   ),
                 ),
                 const Spacer(),

@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'package:stuart_platform_control/core/controller/mdbox_controller.dart';
-import 'package:stuart_platform_control/core/controller/package/app_data_field/axes/three/position_3f.dart';
-import 'package:stuart_platform_control/core/math/sine.dart';
-import 'package:stuart_platform_control/presentation/platform_control/widgets/sine_notifier.dart';
+import 'package:stewart_platform_control/core/io/controller/mdbox_controller.dart';
+import 'package:stewart_platform_control/core/io/controller/package/app_data_field/axes/three/position_3f.dart';
+import 'package:stewart_platform_control/core/math/sine.dart';
+import 'package:stewart_platform_control/presentation/platform_control/widgets/sine_notifier.dart';
 ///
 class StuartPlatform {
   Sine _xSine;

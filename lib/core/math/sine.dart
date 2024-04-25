@@ -1,5 +1,5 @@
 import 'dart:math';
-import 'package:stuart_platform_control/core/math/min_max.dart';
+import 'package:stewart_platform_control/core/math/min_max.dart';
 
 /// 
 /// Parameterized sine function
@@ -12,7 +12,7 @@ class Sine {
   /// Parameterized sine function
   const Sine({
     this.amplitude = 1.0, 
-    this.period = 2*pi,
+    this.period = 5.0,
     this.phaseShift = 0.0,
     double? baseline,
   }) : baseline = baseline != null ? (amplitude > baseline ? amplitude : baseline) : amplitude;

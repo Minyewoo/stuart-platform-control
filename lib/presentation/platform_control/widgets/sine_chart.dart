@@ -1,7 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:stuart_platform_control/core/math/min_max.dart';
-import 'package:stuart_platform_control/core/math/sine.dart';
+import 'package:stewart_platform_control/core/math/min_max.dart';
+import 'package:stewart_platform_control/core/math/sine.dart';
 ///
 class SineChart extends StatelessWidget {
   final int _periodWindow;
