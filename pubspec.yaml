@@ -30,7 +30,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/sine.png
     - assets/sine.svg
     - assets/sine_rounded.png
 
