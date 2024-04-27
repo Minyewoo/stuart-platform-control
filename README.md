@@ -1,3 +1,3 @@
-# stuart_platform_control
+# stewart_platform_control
 
-A new Flutter project.
+An app to control Stuart platform fluctuations.
