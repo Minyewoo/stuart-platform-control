@@ -2,8 +2,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stewart_platform_control/core/math/sine.dart';
 ///
 class SineStorage {
+  final Sine _defaultSine;
   ///
-  const SineStorage();
+  const SineStorage({
+    Sine defaultSine = const Sine(
+      amplitude: 20.0,
+      period: 2.0,
+      phaseShift: 0.0,
+    ),
+  }) : _defaultSine = defaultSine;
   ///
   void storeSine(String prefix, Sine sine, SharedPreferences prefs) {
     final fields = {
@@ -18,11 +25,10 @@ class SineStorage {
   }
   ///
   Sine retrieveSine(String prefix, SharedPreferences prefs) {
-    const defaultSine = Sine();
     return Sine(
-      amplitude: prefs.getDouble('${prefix}amplitude') ?? defaultSine.amplitude,
-      period: prefs.getDouble('${prefix}period') ?? defaultSine.period,
-      phaseShift: prefs.getDouble('${prefix}phaseShift') ?? defaultSine.phaseShift,
+      amplitude: prefs.getDouble('${prefix}amplitude') ?? _defaultSine.amplitude,
+      period: prefs.getDouble('${prefix}period') ?? _defaultSine.period,
+      phaseShift: prefs.getDouble('${prefix}phaseShift') ?? _defaultSine.phaseShift,
       baseline: prefs.getDouble('${prefix}baseline'),
     );
   }

@@ -6,6 +6,10 @@ import 'package:stewart_platform_control/presentation/platform_control/widgets/p
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sine_chart.dart';
 ///
 class SineControlWidget extends StatelessWidget {
+  final double _cilinderMaxHeight;
+  final MinMax _amplitudeConstraints;
+  final MinMax _perionConstraints;
+  final MinMax _phaseShiftConstraints;
   final String _title;
   final ValueNotifier<Sine> _sineNotifier;
   final ValueNotifier<MinMax> _minMaxNotifier;
@@ -14,8 +18,12 @@ class SineControlWidget extends StatelessWidget {
     super.key, 
     required ValueNotifier<Sine> sineNotifier,
     required ValueNotifier<MinMax> minMaxNotifier, 
-    String title = '',
+    String title = '', required double cilinderMaxHeight, required MinMax amplitudeConstraints, required MinMax perionConstraints, required MinMax phaseShiftConstraints,
   }) : 
+    _phaseShiftConstraints = phaseShiftConstraints,
+    _perionConstraints = perionConstraints,
+    _amplitudeConstraints = amplitudeConstraints,
+    _cilinderMaxHeight = cilinderMaxHeight, 
     _title = title,
     _sineNotifier = sineNotifier,
     _minMaxNotifier = minMaxNotifier;
@@ -39,25 +47,36 @@ class SineControlWidget extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: ParameterSlider(
-                      label: 'Амплитуда',
-                      valueNotifier: _sineNotifier,
-                      minMax: const MinMax(min: 0, max: 1000),
-                      divisions: 1000,
-                      sliderValueBuilder: (sine) => sine.amplitude,
-                      displayValueBuilder: (sine) => sine.amplitude.toStringAsFixed(0),
-                      valueUnit: ' мм',
-                      onChanged: _changeAmplitude,
+                    child: ValueListenableBuilder(
+                      valueListenable: _sineNotifier,
+                      builder: (context, sine, child) {
+                        final remainingHeight = _cilinderMaxHeight - sine.baseline;
+                        return ParameterSlider(
+                          label: 'Амплитуда',
+                          valueNotifier: _sineNotifier,
+                          minMax: MinMax(
+                            min: _amplitudeConstraints.min,
+                            max: remainingHeight > _amplitudeConstraints.max
+                              ? _amplitudeConstraints.max
+                              : remainingHeight,
+                            ),
+                          divisions: (_amplitudeConstraints.max - _amplitudeConstraints.min).floor(),
+                          sliderValueBuilder: (sine) => sine.amplitude,
+                          displayValueBuilder: (sine) => sine.amplitude.toStringAsFixed(0),
+                          valueUnit: ' мм',
+                          onChanged: _changeAmplitude,
+                        );
+                      }
                     ),
                   ),
                   Expanded(
                     child: ParameterSlider(
                       label: 'Период',
                       valueNotifier: _sineNotifier,
-                      minMax: const MinMax(min: 0.1, max: 120),
-                      divisions: 1199,
+                      minMax: _perionConstraints,
+                      divisions: (_perionConstraints.max - _perionConstraints.min).floor(),
                       sliderValueBuilder: (sine) => sine.period,
-                      displayValueBuilder: (sine) => sine.period.toStringAsFixed(1),
+                      displayValueBuilder: (sine) => sine.period.toStringAsFixed(0),
                       valueUnit: ' с',
                       onChanged: _changePeriod,
                     ),
@@ -66,8 +85,8 @@ class SineControlWidget extends StatelessWidget {
                     child: ParameterSlider(
                       label: 'Сдвиг фазы',
                       valueNotifier: _sineNotifier,
-                      minMax: const MinMax(min: 0, max: 180),
-                      divisions: 180,
+                      minMax: _phaseShiftConstraints,
+                      divisions: (_phaseShiftConstraints.max - _phaseShiftConstraints.min).floor(),
                       sliderValueBuilder: (sine) => double.parse((sine.phaseShift*180/pi).toStringAsFixed(0)),
                       displayValueBuilder: (sine) => (sine.phaseShift*180/pi).toStringAsFixed(0),
                       valueUnit: '°',
@@ -78,10 +97,10 @@ class SineControlWidget extends StatelessWidget {
                     child: ValueListenableBuilder(
                       valueListenable: _sineNotifier,
                       builder: (context, sine, child) => ParameterSlider(
-                        label: 'Базовое значение',
+                        label: 'Середина',
                         valueNotifier: _sineNotifier,
-                        minMax: MinMax(min: _sineNotifier.value.amplitude, max: 3000-_sineNotifier.value.amplitude),
-                        divisions: (3000-_sineNotifier.value.amplitude*2).round(),
+                        minMax: MinMax(min: _sineNotifier.value.amplitude, max: _cilinderMaxHeight-_sineNotifier.value.amplitude),
+                        divisions: (_cilinderMaxHeight-_sineNotifier.value.amplitude*2+1).round(),
                         sliderValueBuilder: (sine) => sine.baseline,
                         displayValueBuilder: (sine) => sine.baseline.toStringAsFixed(0),
                         valueUnit: ' мм',
@@ -98,7 +117,7 @@ class SineControlWidget extends StatelessWidget {
           child: SineChart(
             sineNotifier: _sineNotifier,
             minMaxNotifier: _minMaxNotifier,
-            periodWindow: 120,
+            periodWindow: _perionConstraints.max.floor(),
             pointsCountFactor: 30,
           ),
         ),

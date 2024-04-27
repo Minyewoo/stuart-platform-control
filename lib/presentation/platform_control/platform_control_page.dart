@@ -11,15 +11,27 @@ import 'package:stewart_platform_control/presentation/platform_control/widgets/s
 import 'package:toastification/toastification.dart';
 ///
 class PlatformControlPage extends StatefulWidget {
+  final double _cilinderMaxHeight;
+  final MinMax _amplitudeConstraints;
+  final MinMax _periodConstraints;
+  final MinMax _phaseShiftConstraints;
   final Duration _controlFrequency;
   final MdboxController _controller;
   ///
   const PlatformControlPage({
     super.key,
     required MdboxController controller,
+    required double cilinderMaxHeight,
+    required MinMax amplitudeConstraints,
+    required MinMax periodConstraints,
+    required MinMax phaseShiftConstraints,
     Duration controlFrequency = const Duration(milliseconds: 100),
   }) : 
     _controller = controller,
+    _cilinderMaxHeight = cilinderMaxHeight,
+    _amplitudeConstraints = amplitudeConstraints,
+    _periodConstraints = periodConstraints,
+    _phaseShiftConstraints = phaseShiftConstraints,
     _controlFrequency = controlFrequency;
   //
   @override
@@ -198,6 +210,10 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
                   child: Padding(
                     padding: chartsPadding,
                     child: SineControlWidget(
+                      cilinderMaxHeight: widget._cilinderMaxHeight,
+                      amplitudeConstraints: widget._amplitudeConstraints,
+                      perionConstraints: widget._periodConstraints,
+                      phaseShiftConstraints: widget._phaseShiftConstraints,
                       title: 'Ось 1 (X)',
                       sineNotifier: _axisXSineNotifier,
                       minMaxNotifier: _minMaxNotifier,
@@ -208,6 +224,10 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
                   child: Padding(
                     padding: chartsPadding,
                     child: SineControlWidget(
+                      cilinderMaxHeight: widget._cilinderMaxHeight,
+                      amplitudeConstraints: widget._amplitudeConstraints,
+                      perionConstraints: widget._periodConstraints,
+                      phaseShiftConstraints: widget._phaseShiftConstraints,
                       title: 'Ось 2 (Y)',
                       sineNotifier: _axisYSineNotifier,
                       minMaxNotifier: _minMaxNotifier,
@@ -218,6 +238,10 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
                   child: Padding(
                     padding: chartsPadding,
                     child: SineControlWidget(
+                      cilinderMaxHeight: widget._cilinderMaxHeight,
+                      amplitudeConstraints: widget._amplitudeConstraints,
+                      perionConstraints: widget._periodConstraints,
+                      phaseShiftConstraints: widget._phaseShiftConstraints,
                       title: 'Ось 3 (Z)',
                       sineNotifier: _axisZSineNotifier,
                       minMaxNotifier: _minMaxNotifier,

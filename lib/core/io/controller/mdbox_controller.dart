@@ -1,8 +1,12 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:hmi_core/hmi_core_result_new.dart';
 import 'package:stewart_platform_control/core/io/controller/package/app_control_field/app_control_field.dart';
+import 'package:stewart_platform_control/core/io/controller/package/app_control_field/confirm_code.dart';
 import 'package:stewart_platform_control/core/io/controller/package/app_control_field/function_code.dart';
 import 'package:stewart_platform_control/core/io/controller/package/app_control_field/object_channel.dart';
+import 'package:stewart_platform_control/core/io/controller/package/app_control_field/pass_code.dart';
+import 'package:stewart_platform_control/core/io/controller/package/app_data_field/axes/six/position_6f.dart';
 import 'package:stewart_platform_control/core/io/controller/package/app_data_field/axes/six/six_axes_data_field.dart';
 import 'package:stewart_platform_control/core/io/controller/package/app_data_field/axes/three/position_3f.dart';
 import 'package:stewart_platform_control/core/io/controller/package/app_data_field/axes/three/three_axes_data_field.dart';
@@ -35,34 +39,111 @@ import 'package:stewart_platform_control/core/net_address.dart';
 class MdboxController {
   final NetAddress _myAddress;
   final NetAddress _controllerAddress;
+  RawDatagramSocket? _socket;
   ///
-  const MdboxController({
+  MdboxController({
     NetAddress myAddress = const NetAddress.localhost(8888),
     required NetAddress controllerAddress,
   }) : 
     _myAddress = myAddress,
     _controllerAddress = controllerAddress;
   ///
-  Future<ResultF<void>> readReg(RegDataField package) {
+  Future<ResultF<void>> readRegister(RegDataField package) {
     // TODO implement readReg
     throw UnimplementedError();
   }
   ///
-  Future<ResultF<void>> writeReg(RegDataField package) {
-    // TODO implement writeReg
-    throw UnimplementedError();
-  }
-  ///
-  Future<ResultF<void>> sendPosition3f(Position3f position) async {
-    final socket = await RawDatagramSocket.bind(
-      _myAddress.ipv4,
-      _myAddress.port,
-      reuseAddress: true,
-      reusePort: true,
-    );
+  Future<ResultF<void>> writeRegister(RegDataField regData, ObjectChannel channel) async {
+    await _maybeStartSocket();
+    final socket = _socket!;
+    socket.writeEventsEnabled = true;
     socket.send(
       UdpData(
         controlField: AppControlField.def(
+          functionCode: const FunctionCode.fromIterable(writeReg),
+          objectChannel: channel,
+        ),
+        whoField: AppWhoField(
+          whoAccept: const Who.all(),
+          whoReply: const Who.none(),
+        ),
+        dataField: regData,
+      ).bytes.toList(),
+      InternetAddress(_controllerAddress.ipv4, type: InternetAddressType.IPv4),
+      _controllerAddress.port,
+    );
+    await Future.delayed(Duration.zero);
+    socket.writeEventsEnabled = false;
+    // socket.close();
+    return const Ok(null);
+  }
+  Future<void> _maybeStartSocket() async {
+    if(_socket == null) {
+      _socket = await RawDatagramSocket.bind(
+        _myAddress.ipv4,
+        _myAddress.port,
+        reuseAddress: true,
+        reusePort: true,
+      );
+      _socket!.listen((event) {
+        switch (event) {
+          case RawSocketEvent.read:
+            final datagram = _socket?.receive();
+            final package = UdpData.fromIterable(datagram!.data);
+            final functionCode = package.controlField.functionCode.bytes.toList();
+            switch(functionCode) {
+              case absTimePlayAllRight:
+                log('absTimePlayAllRight');
+                break;
+              case absTimePlayAllErr1:
+                log('Error (absTime): internal buffer is full');
+                break;
+              case absTimePlayAllErr2:
+                log('Error (absTime): data length of data frame is inadequate');
+                break;
+              case deltaTimePlayAllRight:
+                log('deltaTimePlayAllRight');
+                break;
+              case deltaTimePlayAllErr1:
+                log('Error (deltaTime): internal buffer is full');
+                break;
+              case deltaTimePlayAllErr2:
+                log('Error (deltaTime): data length of data frame is inadequate');
+                break;
+              case writeRegRightReply:
+                log('writeRegRightReply');
+              case writeRegFalseReply:
+                log('writeRegFalseReply');
+              default:
+                log('Unknown function code: ${functionCode.map((e) => e.toRadixString(16).padLeft(2,'0'))}');
+            }
+            break;
+          case RawSocketEvent.readClosed:
+            log('readClosed');
+            // TODO: Handle this case.
+            break;
+          case RawSocketEvent.write:
+            log('write');
+            break;
+          case RawSocketEvent.closed:
+            log('closed');
+            // TODO: Handle this case.
+            break;
+        }
+        event.toString();
+      });
+    }
+  }
+  ///
+  Future<ResultF<void>> sendPosition3f(Position3f position) async {
+    await _maybeStartSocket();
+    final socket = _socket!;
+    socket.writeEventsEnabled = true;
+    socket.send(
+      UdpData(
+        controlField: AppControlField(
+          confirmCode: const ConfirmCode.def(),
+          passCode: const PassCode.none(),
           functionCode: const FunctionCode.fromIterable(deltaTimePlayAll),
           objectChannel: const ObjectChannel.fromIterable(threeAxisMode),
         ),
@@ -72,7 +153,7 @@ class MdboxController {
         ),
         dataField: ThreeAxesDataField(
           lineNumber: 1,
-          time: 64,
+          time: 1,
           position: position,
         ),
       ).bytes.toList(),
@@ -80,12 +161,37 @@ class MdboxController {
       _controllerAddress.port,
     );
     await Future.delayed(Duration.zero);
-    socket.close();
+    socket.writeEventsEnabled = false;
+    // socket.close();
     return const Ok(null);
   }
   ///
-  Future<ResultF<void>> sendPosition6f(SixAxesDataField package) {
-    // TODO implement sendPosition6f
-    throw UnimplementedError();
+  Future<ResultF<void>> sendPosition6f(Position6f position) async {
+   await _maybeStartSocket();
+    final socket = _socket!;
+    socket.writeEventsEnabled = true;
+    socket.send(
+      UdpData(
+        controlField: AppControlField.def(
+          functionCode: const FunctionCode.fromIterable(absTimePlayAll),
+          objectChannel: const ObjectChannel.fromIterable(sixAxisMode),
+        ),
+        whoField: AppWhoField(
+          whoAccept: const Who.all(),
+          whoReply: const Who.all(),
+        ),
+        dataField: SixAxesDataField(
+          lineNumber: 1,
+          time: 1000,
+          position: position,
+        ),
+      ).bytes.toList(),
+      InternetAddress(_controllerAddress.ipv4, type: InternetAddressType.IPv4),
+      _controllerAddress.port,
+    );
+    await Future.delayed(Duration.zero);
+    socket.writeEventsEnabled = false;
+    // socket.close();
+    return const Ok(null);
   }
 }
