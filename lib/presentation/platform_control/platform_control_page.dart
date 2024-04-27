@@ -62,9 +62,6 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
     _axisYSineNotifier.addListener(_tryRecomputeMinMax);
     _axisZSineNotifier.addListener(_tryRecomputeMinMax);
     _platform = StuartPlatform(
-      xSineNotifier: _axisXSineNotifier,
-      ySineNotifier: _axisYSineNotifier,
-      zSineNotifier: _axisZSineNotifier,
       controlFrequency: widget._controlFrequency,
       controller: widget._controller,
       onStart: () {
@@ -178,11 +175,11 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: isTight ? IconButton(
-                  onPressed: _platform.startFluctuations,
+                  onPressed: _startFluctuations,
                   icon: const Icon(Icons.play_arrow),
                   tooltip: 'Начать движение',
                 ) : FilledButton.icon(
-                  onPressed: _platform.startFluctuations,
+                  onPressed: _startFluctuations,
                   icon: const Icon(Icons.play_arrow),
                   label: const Text('Начать движение'),
                 ),
@@ -253,6 +250,14 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
           ),
         );
       },
+    );
+  }
+  //
+  void _startFluctuations() {
+    _platform.startFluctuations(
+      xSine: _axisXSineNotifier.value,
+      ySine: _axisYSineNotifier.value,
+      zSine: _axisZSineNotifier.value,
     );
   }
 }

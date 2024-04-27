@@ -37,6 +37,7 @@ import 'package:stewart_platform_control/core/net_address.dart';
 
 ///
 class MdboxController {
+  static const _positionFactor = 1000;
   final NetAddress _myAddress;
   final NetAddress _controllerAddress;
   RawDatagramSocket? _socket;
@@ -154,7 +155,11 @@ class MdboxController {
         dataField: ThreeAxesDataField(
           lineNumber: 1,
           time: 1,
-          position: position,
+          position: position.copyWith(
+            x: position.x * _positionFactor,
+            y: position.y * _positionFactor,
+            z: position.z * _positionFactor,
+          ),
         ),
       ).bytes.toList(),
       InternetAddress(_controllerAddress.ipv4, type: InternetAddressType.IPv4),
@@ -183,7 +188,14 @@ class MdboxController {
         dataField: SixAxesDataField(
           lineNumber: 1,
           time: 1000,
-          position: position,
+          position: position.copyWith(
+            x: position.x * _positionFactor,
+            y: position.y * _positionFactor,
+            z: position.z * _positionFactor,
+            u: position.u * _positionFactor,
+            v: position.v * _positionFactor,
+            w: position.w * _positionFactor,
+          ),
         ),
       ).bytes.toList(),
       InternetAddress(_controllerAddress.ipv4, type: InternetAddressType.IPv4),

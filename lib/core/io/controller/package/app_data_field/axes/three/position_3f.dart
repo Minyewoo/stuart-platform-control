@@ -31,4 +31,14 @@ class Position3f implements ByteSequence {
   //
   @override
   Iterable<int> get bytes => _bytes;
+  ///
+  Position3f copyWith({
+    int? x,
+    int? y,
+    int? z,
+  }) => Position3f.fromValue(
+    x: x ?? this.x,
+    y: y ?? this.y,
+    z: z ?? this.z,
+  );
 }
