@@ -80,6 +80,7 @@ class MdboxController {
   }
   Future<void> _maybeStartSocket() async {
     if(_socket == null) {
+      // TODO catch error with Result
       _socket = await RawDatagramSocket.bind(
         _myAddress.ipv4,
         _myAddress.port,

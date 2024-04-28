@@ -12,4 +12,10 @@ class NetAddress {
     ipv4: '127.0.0.1',
     port: port,
   );
+  factory NetAddress.fromMap(Map<String, dynamic> map) {
+    return NetAddress(
+      ipv4: map['ip'],
+      port: map['port'],
+    );
+  }
 }

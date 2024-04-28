@@ -1,0 +1,26 @@
+{
+    "me": {
+        "ip": "192.168.15.101",
+        "port": 8410
+    },
+    "controller": {
+        "ip": "192.168.15.201",
+        "port": 7408
+    },
+    "cilinderMaxHeight": 900,
+    "amplitudeConstraints": {
+        "min": 0,
+        "max": 300
+    },
+    "periodConstraints": {
+        "min": 1,
+        "max": 15
+    },
+    "phaseShiftConstraints": {
+        "min": 0,
+        "max": 180
+    },
+    "controlFrequency": {
+        "milliseconds": 10
+    }
+}

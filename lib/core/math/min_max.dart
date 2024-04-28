@@ -7,6 +7,13 @@ class MinMax {
     this.min = 0.0,
     this.max = 0.0,
   });
+  ///
+  factory MinMax.fromMap(Map<String, dynamic> map) {
+    return MinMax(
+      min: map['min'],
+      max: map['max'],
+    );
+  }
   //
   @override
   int get hashCode => min.hashCode ^ max.hashCode;

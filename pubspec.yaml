@@ -30,11 +30,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/sine.svg
-    - assets/sine_rounded.png
+    - assets/visuals/sine.svg
+    - assets/visuals/sine_rounded.png
 
 flutter_launcher_icons:
-  image_path:  "assets/sine_rounded.png"
+  image_path:  "assets/visuals/sine_rounded.png"
   windows:
     generate: true
     icon_size: 256 # min:48, max:256, default: 48
