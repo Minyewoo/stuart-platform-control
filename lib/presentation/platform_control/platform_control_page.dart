@@ -6,8 +6,9 @@ import 'package:stewart_platform_control/core/io/storage/sine_storage.dart';
 import 'package:stewart_platform_control/core/math/min_max.dart';
 import 'package:stewart_platform_control/core/platform/stuart_platform.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/min_max_notifier.dart';
+import 'package:stewart_platform_control/presentation/platform_control/widgets/platform_beams_sines.dart';
+import 'package:stewart_platform_control/presentation/platform_control/widgets/platform_control_app_bar.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sine_notifier.dart';
-import 'package:stewart_platform_control/presentation/platform_control/widgets/sine_control_widget.dart';
 import 'package:toastification/toastification.dart';
 ///
 class PlatformControlPage extends StatefulWidget {
@@ -134,119 +135,24 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
   ///
   @override
   Widget build(BuildContext context) {
-    const chartsPadding = EdgeInsets.only(top: 8.0, right: 16.0);
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isTight = constraints.maxWidth < 1000;
         return Scaffold(
-          appBar: AppBar(
-            actions: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: isTight ? IconButton(
-                  onPressed: _saveSines, 
-                  icon: const Icon(Icons.save),
-                  tooltip: 'Сохранить параметры',
-                ) : FilledButton.icon(
-                  onPressed: _saveSines, 
-                  icon: const Icon(Icons.save), 
-                  label: isTight ? const SizedBox() : const Text('Сохранить параметры'),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: isTight ? Tooltip(
-                  message: _isPlatformMoving 
-                    ? 'Движение в процессе' 
-                    : 'Движение остановлено',
-                  child: Icon(
-                      Icons.circle, 
-                      color: _isPlatformMoving ? Colors.greenAccent : null,
-                    ),
-                ) : OutlinedButton.icon(
-                  onPressed: _isPlatformMoving ? () {} : null,
-                  icon: Icon(
-                    Icons.circle, 
-                    color: _isPlatformMoving ? Colors.greenAccent : null,
-                  ), 
-                  label: const Text('Движение в процессе'),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: isTight ? IconButton(
-                  onPressed: _startFluctuations,
-                  icon: const Icon(Icons.play_arrow),
-                  tooltip: 'Начать движение',
-                ) : FilledButton.icon(
-                  onPressed: _startFluctuations,
-                  icon: const Icon(Icons.play_arrow),
-                  label: const Text('Начать движение'),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: isTight ? IconButton(
-                  onPressed: _platform.stop,
-                  icon: const Icon(Icons.stop),
-                  tooltip: 'Остановить движение',
-                ) : FilledButton.icon(
-                  onPressed: _platform.stop, 
-                  icon: const Icon(Icons.stop), 
-                  label: const Text('Остановить движение'),
-                ),
-              ),
-            ],
+          appBar: PlatformControlAppBar(
+            onSaveSines: _saveSines,
+            onStartFluctuations: _startFluctuations,
+            onPlatformStop: _platform.stop,
+            isPlatformMoving: _isPlatformMoving,
           ),
-          body: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: chartsPadding,
-                    child: SineControlWidget(
-                      cilinderMaxHeight: widget._cilinderMaxHeight,
-                      amplitudeConstraints: widget._amplitudeConstraints,
-                      perionConstraints: widget._periodConstraints,
-                      phaseShiftConstraints: widget._phaseShiftConstraints,
-                      title: 'Ось 1 (X)',
-                      sineNotifier: _axisXSineNotifier,
-                      minMaxNotifier: _minMaxNotifier,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: chartsPadding,
-                    child: SineControlWidget(
-                      cilinderMaxHeight: widget._cilinderMaxHeight,
-                      amplitudeConstraints: widget._amplitudeConstraints,
-                      perionConstraints: widget._periodConstraints,
-                      phaseShiftConstraints: widget._phaseShiftConstraints,
-                      title: 'Ось 2 (Y)',
-                      sineNotifier: _axisYSineNotifier,
-                      minMaxNotifier: _minMaxNotifier,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: chartsPadding,
-                    child: SineControlWidget(
-                      cilinderMaxHeight: widget._cilinderMaxHeight,
-                      amplitudeConstraints: widget._amplitudeConstraints,
-                      perionConstraints: widget._periodConstraints,
-                      phaseShiftConstraints: widget._phaseShiftConstraints,
-                      title: 'Ось 3 (Z)',
-                      sineNotifier: _axisZSineNotifier,
-                      minMaxNotifier: _minMaxNotifier,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          body: PlatformBeamsSines(
+            axisXSineNotifier: _axisXSineNotifier,
+            minMaxNotifier: _minMaxNotifier,
+            axisYSineNotifier: _axisYSineNotifier,
+            axisZSineNotifier: _axisZSineNotifier,
+            cilinderMaxHeight: widget._cilinderMaxHeight,
+            amplitudeConstraints: widget._amplitudeConstraints,
+            periodConstraints: widget._periodConstraints,
+            phaseShiftConstraints: widget._phaseShiftConstraints,
           ),
         );
       },
