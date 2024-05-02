@@ -29,7 +29,6 @@ class Config {
   factory Config.fromMap(Map<String, dynamic> map) {
     final jsonFrequency =  map['controlFrequency'];
     final frequency = Duration(
-      seconds: jsonFrequency['seconds'],
       milliseconds: jsonFrequency['milliseconds']
     );
     return Config(

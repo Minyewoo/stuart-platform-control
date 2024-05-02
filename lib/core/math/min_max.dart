@@ -10,8 +10,8 @@ class MinMax {
   ///
   factory MinMax.fromMap(Map<String, dynamic> map) {
     return MinMax(
-      min: map['min'],
-      max: map['max'],
+      min: double.parse('${map['min']}'),
+      max: double.parse('${map['max']}'),
     );
   }
   //

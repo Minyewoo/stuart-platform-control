@@ -10,7 +10,7 @@ class PlatformControlAppBar extends StatelessWidget implements PreferredSizeWidg
   ///
   const PlatformControlAppBar({
     super.key,
-    required void Function() onSaveSines,
+    required void Function() onSave,
     required void Function() onStartFluctuations,
     required void Function() onPlatformStop,
     required bool isPlatformMoving, 
@@ -19,7 +19,7 @@ class PlatformControlAppBar extends StatelessWidget implements PreferredSizeWidg
     _isPlatformMoving = isPlatformMoving, 
     _onPlatformStop = onPlatformStop,
     _onStartFluctuations = onStartFluctuations,
-    _onSaveSines = onSaveSines;
+    _onSaveSines = onSave;
   //
   @override
   Widget build(BuildContext context) {

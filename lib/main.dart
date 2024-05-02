@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hmi_core/hmi_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stewart_platform_control/core/config/file_config.dart';
 import 'package:stewart_platform_control/main_app.dart';
 import 'package:window_manager/window_manager.dart';
@@ -16,7 +17,7 @@ Future<void> main() async {
     size: Size(1280, 720),
     center: true,
     backgroundColor: Colors.black,
-    fullScreen: true,
+    fullScreen: false,
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.normal,
   );
@@ -28,11 +29,16 @@ Future<void> main() async {
         windowOptions, 
         () async {
           await windowManager.show();
-          await windowManager.focus();
         },
       );
       final config = await fileConfig.read();
-      runApp(MainApp(config: config));
+      final preferences = await SharedPreferences.getInstance();
+      runApp(
+        MainApp(
+          config: config,
+          preferences: preferences,
+        ),
+      );
     },
     (error, stackTrace) => log.error(
       error.toString(),

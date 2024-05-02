@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:stewart_platform_control/core/math/min_max.dart';
-import 'package:stewart_platform_control/presentation/platform_control/widgets/min_max_notifier.dart';
-import 'package:stewart_platform_control/presentation/platform_control/widgets/sine_control_widget.dart';
-import 'package:stewart_platform_control/presentation/platform_control/widgets/sine_notifier.dart';
+import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/min_max_notifier.dart';
+import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/sine_control_widget.dart';
+import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/sine_notifier.dart';
 
 ///
 class PlatformBeamsSines extends StatelessWidget {
@@ -51,7 +51,7 @@ class PlatformBeamsSines extends StatelessWidget {
                 amplitudeConstraints: _amplitudeConstraints,
                 perionConstraints: _periodConstraints,
                 phaseShiftConstraints: _phaseShiftConstraints,
-                title: 'Ось 1 (X)',
+                title: 'Ось I (X)',
                 sineNotifier: _axisXSineNotifier,
                 minMaxNotifier: _minMaxNotifier,
               ),
@@ -65,7 +65,7 @@ class PlatformBeamsSines extends StatelessWidget {
                 amplitudeConstraints: _amplitudeConstraints,
                 perionConstraints: _periodConstraints,
                 phaseShiftConstraints: _phaseShiftConstraints,
-                title: 'Ось 2 (Y)',
+                title: 'Ось II (Y)',
                 sineNotifier: _axisYSineNotifier,
                 minMaxNotifier: _minMaxNotifier,
               ),
@@ -79,7 +79,7 @@ class PlatformBeamsSines extends StatelessWidget {
                 amplitudeConstraints: _amplitudeConstraints,
                 perionConstraints: _periodConstraints,
                 phaseShiftConstraints: _phaseShiftConstraints,
-                title: 'Ось 3 (Z)',
+                title: 'Ось III (Z)',
                 sineNotifier: _axisZSineNotifier,
                 minMaxNotifier: _minMaxNotifier,
               ),

@@ -2,8 +2,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:stewart_platform_control/core/math/min_max.dart';
 import 'package:stewart_platform_control/core/math/sine.dart';
-import 'package:stewart_platform_control/presentation/platform_control/widgets/parameter_slider.dart';
-import 'package:stewart_platform_control/presentation/platform_control/widgets/sine_chart.dart';
+import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/parameter_slider.dart';
+import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/sine_chart.dart';
 ///
 class SineControlWidget extends StatelessWidget {
   final double _cilinderMaxHeight;
@@ -97,7 +97,7 @@ class SineControlWidget extends StatelessWidget {
                     child: ValueListenableBuilder(
                       valueListenable: _sineNotifier,
                       builder: (context, sine, child) => ParameterSlider(
-                        label: 'Середина',
+                        label: 'Среднее',
                         valueNotifier: _sineNotifier,
                         minMax: MinMax(min: _sineNotifier.value.amplitude, max: _cilinderMaxHeight-_sineNotifier.value.amplitude),
                         divisions: (_cilinderMaxHeight-_sineNotifier.value.amplitude*2+1).round(),
