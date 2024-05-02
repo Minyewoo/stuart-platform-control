@@ -12,7 +12,8 @@ class PlatformBeamsStreamListener extends StatelessWidget {
   //
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
+    return StreamBuilder<Position3f>(
+      initialData: Position3f.fromValue(x: 0, y: 0, z: 0),
       stream: _positionStream,
       builder:(context, snapshot) => switch(snapshot.hasData) {
           true => PlarformBeamsWidget(position: snapshot.data!),

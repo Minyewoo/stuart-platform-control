@@ -31,13 +31,14 @@ class _PlarformBeamsWidgetState extends State<PlarformBeamsWidget> {
           TransformModifier3D(
             Cube3D(1, Vector3(0, 0, 0)),
             Matrix4.identity()
+              ..translate
               ..scale(0.13, 1.5, 0.13)
           ),
           TransformModifier3D(
             Cube3D(1, Vector3(0, 0, 0)),
             Matrix4.identity()
-              ..scale(0.07, 1.5, 0.07)
               ..translate(0.0, widget._position.x / 1000)
+              ..scale(0.07, 1.5, 0.07)
           ),
           TransformModifier3D(
             Cube3D(1, Vector3(0.5, 0, 3)),
@@ -47,8 +48,8 @@ class _PlarformBeamsWidgetState extends State<PlarformBeamsWidget> {
           TransformModifier3D(
             Cube3D(1, Vector3(0.5, 0, 3)),
             Matrix4.identity()
-              ..scale(0.07, 1.5, 0.07)
               ..translate(0.0, widget._position.y / 1000)
+              ..scale(0.07, 1.5, 0.07)
           ),
           TransformModifier3D(
             Cube3D(1, Vector3(3, 0, 0)),
@@ -58,8 +59,8 @@ class _PlarformBeamsWidgetState extends State<PlarformBeamsWidget> {
           TransformModifier3D(
             Cube3D(1, Vector3(3, 0, 0)),
             Matrix4.identity()
-              ..scale(0.07, 1.5, 0.07)
               ..translate(0.0, widget._position.z / 1000)
+              ..scale(0.07, 1.5, 0.07)
           ),
         ],
       ),

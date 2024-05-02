@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'package:hmi_core/hmi_core_result_new.dart';
@@ -40,6 +41,7 @@ class MdboxController {
   static const _positionFactor = 1000;
   final NetAddress _myAddress;
   final NetAddress _controllerAddress;
+  final _responseController = StreamController<UdpData>.broadcast();
   RawDatagramSocket? _socket;
   ///
   MdboxController({
@@ -49,9 +51,30 @@ class MdboxController {
     _myAddress = myAddress,
     _controllerAddress = controllerAddress;
   ///
-  Future<ResultF<void>> readRegister(RegDataField package) {
-    // TODO implement readReg
-    throw UnimplementedError();
+  Stream<UdpData> get responseStream => _responseController.stream;
+  ///
+  Future<ResultF<void>> readRegister(RegDataField regData, ObjectChannel channel) async {
+    await _maybeStartSocket();
+    final socket = _socket!;
+    socket.writeEventsEnabled = true;
+    socket.send(
+      UdpData(
+        controlField: AppControlField.def(
+          functionCode: const FunctionCode.fromIterable(readReg),
+          objectChannel: channel,
+        ),
+        whoField: AppWhoField(
+          whoAccept: const Who.all(),
+          whoReply: const Who.none(),
+        ),
+        dataField: regData,
+      ).bytes.toList(),
+      InternetAddress(_controllerAddress.ipv4, type: InternetAddressType.IPv4),
+      _controllerAddress.port,
+    );
+    await Future.delayed(Duration.zero);
+    socket.writeEventsEnabled = false;
+    return const Ok(null);
   }
   ///
   Future<ResultF<void>> writeRegister(RegDataField regData, ObjectChannel channel) async {
@@ -75,7 +98,6 @@ class MdboxController {
     );
     await Future.delayed(Duration.zero);
     socket.writeEventsEnabled = false;
-    // socket.close();
     return const Ok(null);
   }
   Future<void> _maybeStartSocket() async {
@@ -92,6 +114,7 @@ class MdboxController {
           case RawSocketEvent.read:
             final datagram = _socket?.receive();
             final package = UdpData.fromIterable(datagram!.data);
+            _responseController.add(package);
             final functionCode = package.controlField.functionCode.bytes.toList();
             switch(functionCode) {
               case absTimePlayAllRight:
@@ -137,7 +160,10 @@ class MdboxController {
     }
   }
   ///
-  Future<ResultF<void>> sendPosition3f(Position3f position) async {
+  Future<ResultF<void>> sendPosition3f(
+    Position3f position, {
+      Duration time = const Duration(milliseconds: 1),
+    }) async {
     await _maybeStartSocket();
     final socket = _socket!;
     socket.writeEventsEnabled = true;
@@ -155,7 +181,7 @@ class MdboxController {
         ),
         dataField: ThreeAxesDataField(
           lineNumber: 1,
-          time: 1,
+          time: time.inMilliseconds,
           position: position.copyWith(
             x: position.x * _positionFactor,
             y: position.y * _positionFactor,
