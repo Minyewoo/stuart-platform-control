@@ -6,8 +6,8 @@ import 'package:stewart_platform_control/core/io/storage/center_storage.dart';
 import 'package:stewart_platform_control/core/io/storage/sine_storage.dart';
 import 'package:stewart_platform_control/core/math/min_max.dart';
 import 'package:stewart_platform_control/core/platform/stewart_platform.dart';
-import 'package:stewart_platform_control/presentation/platform_control/widgets/fluctuation_point_picker.dart';
-import 'package:stewart_platform_control/presentation/platform_control/widgets/platform_beams/platform_beams_controller_listener.dart';
+import 'package:stewart_platform_control/presentation/platform_control/widgets/fluctuation_center/fluctuation_center_coords.dart';
+import 'package:stewart_platform_control/presentation/platform_control/widgets/fluctuation_center/fluctuation_side_projection.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/min_max_notifier.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/platform_beams_sines.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/platform_control_app_bar.dart';
@@ -22,6 +22,7 @@ class PlatformControlPage extends StatefulWidget {
   final MinMax _phaseShiftConstraints;
   final Duration _controlFrequency;
   final Duration _reportFrequency;
+  final double _realPlatformDimension;
   final MdboxController _controller;
   ///
   const PlatformControlPage({
@@ -32,9 +33,11 @@ class PlatformControlPage extends StatefulWidget {
     required MinMax periodConstraints,
     required MinMax phaseShiftConstraints,
     required SharedPreferences preferences,
+    required double realPlatformDimension,
     Duration controlFrequency = const Duration(milliseconds: 100),
     Duration reportFrequency = const Duration(milliseconds: 100),
-  }) : 
+  }) :
+    _realPlatformDimension = realPlatformDimension, 
     _controller = controller,
     _cilinderMaxHeight = cilinderMaxHeight,
     _amplitudeConstraints = amplitudeConstraints,
@@ -58,6 +61,7 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
   late final SineNotifier _axisZSineNotifier;
   late final MinMaxNotifier _minMaxNotifier;
   late final ValueNotifier<Offset> _fluctuationCenterNotifier;
+  late final ValueNotifier<Offset> _rotationNotifier;
   late final StewartPlatform _platform;
   late bool _isPlatformMoving;
   //
@@ -81,6 +85,7 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
     );
     _isPlatformMoving = false;
     _fluctuationCenterNotifier = ValueNotifier(const Offset(50.0, 50.0));
+    _rotationNotifier = ValueNotifier(const Offset(pi/3, pi/5));
     _axisXSineNotifier = SineNotifier();
     _axisYSineNotifier = SineNotifier();
     _axisZSineNotifier = SineNotifier();
@@ -197,22 +202,49 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
               Expanded(
                 flex: 1,
                 child: Card(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: FluctuationPointPicker(
-                          realPlatformDimention: 800,
-                          fluctuationCenter: _fluctuationCenterNotifier,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          children: [
+                            const Text(
+                              'Центр колебаний: '
+                            ),
+                            const Spacer(),
+                            FluctuationCenterCoords(
+                              fluctuationCenter: _fluctuationCenterNotifier,
+                            ),
+                          ],
                         ),
-                      ),
-                      Expanded(
-                        child: PlatformBeamsController(
-                          platform: _platform,
+                        const SizedBox(height: 8),
+                        // FluctuationTopProjection(
+                        //   realPlatformDimention: 800,
+                        //   fluctuationCenter: _fluctuationCenterNotifier,
+                        // ),
+                        // const SizedBox(height: 8),
+                        Expanded(
+                          child: FluctuationSideProjection(
+                            type: ProjectionType.horizontal,
+                            realPlatformDimention: widget._realPlatformDimension,
+                            fluctuationCenter: _fluctuationCenterNotifier,
+                            rotation: _rotationNotifier,
+                            pointSize: 9,
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 8),
+                        Expanded(
+                          child: FluctuationSideProjection(
+                            type: ProjectionType.vertical,
+                            realPlatformDimention: widget._realPlatformDimension,
+                            fluctuationCenter: _fluctuationCenterNotifier,
+                            rotation: _rotationNotifier,
+                            pointSize: 9,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
