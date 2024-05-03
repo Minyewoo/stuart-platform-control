@@ -16,6 +16,7 @@ class StewartPlatform {
   final void Function()? _onStartControl;
   final void Function()? _onStopControl;
   final _reportController = StreamController<Position3f>.broadcast();
+  DateTime _startTime = DateTime.now();
   Timer? _controlTimer;
   Timer? _reportTimer;
   ///
@@ -38,9 +39,10 @@ class StewartPlatform {
     required Sine zSine,
   }) async {
     _controlTimer?.cancel();
-    _goOnBaselines(xSine, ySine, zSine);
-    _controlTimer = Timer.periodic(_controlFrequency, (_) {
-      final t =  DateTime.now().millisecondsSinceEpoch / 1000.0;
+    await _extractBeamsToStarterPositions(xSine, ySine, zSine);
+    _startTime = DateTime.now();
+    _controlTimer = Timer.periodic(_controlFrequency, (timer) {
+      final t =  DateTime.now().difference(_startTime).inMilliseconds / 1000.0;
       _controller.sendPosition3f(
         Position3f.fromValue(
           x: xSine.of(t).floor(),
@@ -84,27 +86,31 @@ class StewartPlatform {
     _onStartControl?.call();
   }
   ///
-  Future<void> _goOnBaselines(Sine xSine, Sine ySine, Sine zSine) async {
+  Future<void> _extractBeamsToStarterPositions(Sine xSine, Sine ySine, Sine zSine) async {
     const rampTimeForMeter = Duration(seconds: 10);
+    final initialPositioningtime = Duration(milliseconds: (rampTimeForMeter.inMilliseconds/2).floor());
     _controller.sendPosition3f(
       Position3f.fromValue(
         x: 0,
         y: 0,
         z: 0,
       ),
-      time: rampTimeForMeter,
+      time: initialPositioningtime,
     );
-    await Future.delayed(rampTimeForMeter);
+    await Future.delayed(initialPositioningtime);
+    final coords = [xSine, ySine, zSine]
+      .map((sine) => sine.of(0).floor())
+      .toList();
     final actualRampTime = Duration(
       milliseconds: (
-        [xSine.baseline, ySine.baseline, zSine.baseline].reduce(max) / 1000 * rampTimeForMeter.inMilliseconds
+        coords.reduce(max) / 1000 * rampTimeForMeter.inMilliseconds
       ).round(),
     );
     _controller.sendPosition3f(
       Position3f.fromValue(
-        x: xSine.baseline.round(),
-        y: ySine.baseline.round(),
-        z: zSine.baseline.round(),
+        x: coords[0],
+        y: coords[1],
+        z: coords[2],
       ),
       time: actualRampTime,
     );
