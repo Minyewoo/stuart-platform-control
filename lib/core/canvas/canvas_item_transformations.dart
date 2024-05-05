@@ -11,6 +11,11 @@ extension CanvasItemTransformations on CanvasItem {
     rotationRadians: rotationRadians,
   );
   ///
+  CanvasItem rotateAroundPoint(double rotationRadians, Offset point) => this
+    ..translate(Offset.zero-point)
+    ..rotate(rotationRadians)
+    ..translate(point);
+  ///
   CanvasItem center({
     CenteringDirection direction = CenteringDirection.both,
   }) => CanvasCenteredItem(

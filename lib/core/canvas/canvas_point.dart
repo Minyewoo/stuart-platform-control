@@ -6,7 +6,7 @@ class CanvasPoint implements CanvasItem {
   final double _width;
   final Offset _coord;
   ///
-  CanvasPoint({
+  const CanvasPoint({
     required Color color,
     required double width,
     Offset coord = const Offset(0.0, 0.0),
