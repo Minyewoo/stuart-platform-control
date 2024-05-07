@@ -8,13 +8,13 @@ enum CanvasLineDirection {
   undefined,
 }
 ///
-class CanvasLine implements CanvasItem {
+class CanvasRect implements CanvasItem {
   final Color _color;
   final double _strokeWidth;
   final CanvasItemDimension _width;
   final CanvasLineDirection _direction;
   ///
-  const CanvasLine({
+  const CanvasRect({
     required Color color,
     required double strokeWidth,
     CanvasItemDimension width = const CanvasItemDimension.sizedFromCanvas(),
@@ -35,20 +35,24 @@ class CanvasLine implements CanvasItem {
         CanvasLineDirection.vertical => size.height,
       },
     };
-    final destination = switch(_direction) {
+    final sizing = switch(_direction) {
       CanvasLineDirection.horizontal 
-      || CanvasLineDirection.undefined => Offset(lineLength, 0.0),
-      CanvasLineDirection.vertical => Offset(0.0, lineLength),
+      || CanvasLineDirection.undefined => Offset(lineLength, _strokeWidth),
+      CanvasLineDirection.vertical => Offset(_strokeWidth, lineLength),
+    };
+    final translation = switch(_direction) {
+      CanvasLineDirection.horizontal 
+      || CanvasLineDirection.undefined => Offset(0.0, -_strokeWidth/2),
+      CanvasLineDirection.vertical => Offset(-_strokeWidth/2, 0.0),
     };
     return Path()
       ..moveTo(0.0, 0.0)
-      ..lineTo(destination.dx, destination.dy);
+      ..addRect(Rect.fromLTWH(translation.dx, translation.dy, sizing.dx, sizing.dy));
   }
   //
   @override
   Paint get paint => Paint()
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = _strokeWidth
+    ..style = PaintingStyle.fill
     ..color = _color
     ..isAntiAlias = true;
 }
