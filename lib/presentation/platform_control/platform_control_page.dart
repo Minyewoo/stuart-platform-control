@@ -1,25 +1,28 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hmi_core/hmi_core.dart';
+import 'package:hmi_widgets/hmi_widgets.dart';
+import 'package:stewart_platform_control/core/entities/cilinders_extractions.dart';
 import 'package:stewart_platform_control/core/io/controller/mdbox_controller.dart';
-import 'package:stewart_platform_control/core/io/storage/center_storage.dart';
-import 'package:stewart_platform_control/core/io/storage/sine_storage.dart';
+import 'package:stewart_platform_control/core/math/mapping/fluctuation_lengths_mapping.dart';
+import 'package:stewart_platform_control/core/math/mapping/time_mapping.dart';
+import 'package:stewart_platform_control/core/math/mapping/mapping.dart';
 import 'package:stewart_platform_control/core/math/min_max.dart';
+import 'package:stewart_platform_control/core/math/sine.dart';
+import 'package:stewart_platform_control/core/platform/platform_state.dart';
 import 'package:stewart_platform_control/core/platform/stewart_platform.dart';
+import 'package:stewart_platform_control/presentation/platform_control/widgets/fluctuation_center/colored_coords.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/fluctuation_center/fluctuation_center_coords.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/fluctuation_center/fluctuation_side_projection.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/min_max_notifier.dart';
-import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/platform_beams_sines.dart';
+import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/platform_angle_sines.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/platform_control_app_bar.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/sine_notifier.dart';
-import 'package:toastification/toastification.dart';
+import 'package:vector_math/vector_math_64.dart' hide Colors;
 ///
 class PlatformControlPage extends StatefulWidget {
-  final SharedPreferences _preferences;
   final double _cilinderMaxHeight;
-  final MinMax _amplitudeConstraints;
-  final MinMax _periodConstraints;
-  final MinMax _phaseShiftConstraints;
   final Duration _controlFrequency;
   final Duration _reportFrequency;
   final double _realPlatformDimension;
@@ -28,22 +31,14 @@ class PlatformControlPage extends StatefulWidget {
   const PlatformControlPage({
     super.key,
     required MdboxController controller,
-    required double cilinderMaxHeight,
-    required MinMax amplitudeConstraints,
-    required MinMax periodConstraints,
-    required MinMax phaseShiftConstraints,
-    required SharedPreferences preferences,
     required double realPlatformDimension,
+    required double cilinderMaxHeight,
     Duration controlFrequency = const Duration(milliseconds: 100),
     Duration reportFrequency = const Duration(milliseconds: 100),
   }) :
     _realPlatformDimension = realPlatformDimension, 
     _controller = controller,
     _cilinderMaxHeight = cilinderMaxHeight,
-    _amplitudeConstraints = amplitudeConstraints,
-    _periodConstraints = periodConstraints,
-    _phaseShiftConstraints = phaseShiftConstraints,
-    _preferences = preferences,
     _controlFrequency = controlFrequency,
     _reportFrequency = reportFrequency;
   //
@@ -52,48 +47,69 @@ class PlatformControlPage extends StatefulWidget {
 }
 ///
 class _PlatformControlPageState extends State<PlatformControlPage> {
-  late final SineStorage _xStorage;
-  late final SineStorage _yStorage;
-  late final SineStorage _zStorage;
-  late final CenterStorage _centerStorage;
-  late final SineNotifier _axisXSineNotifier;
-  late final SineNotifier _axisYSineNotifier;
-  late final SineNotifier _axisZSineNotifier;
-  late final MinMaxNotifier _minMaxNotifier;
+  late final SineNotifier _rotationAngleX;
+  late final SineNotifier _rotationAngleY;
+  late final SineNotifier _baseline;
+  late final MinMaxNotifier _angleMinMaxNotifier;
+  late final MinMaxNotifier _baselineMinMaxNotifier;
   late final ValueNotifier<Offset> _fluctuationCenterNotifier;
-  late final ValueNotifier<Offset> _rotationNotifier;
   late final StewartPlatform _platform;
+  late final Stream<DsDataPoint<double>> _lengthsStream;
   late bool _isPlatformMoving;
   //
   @override
   void initState() {
-    _xStorage = SineStorage(
-      preferences: widget._preferences,
-      keysPsrefix: 'x_',
-    );
-    _yStorage = SineStorage(
-      preferences: widget._preferences,
-      keysPsrefix: 'y_',
-    );
-    _zStorage = SineStorage(
-      preferences: widget._preferences,
-      keysPsrefix: 'z_',
-    );
-    _centerStorage = CenterStorage(
-      preferences: widget._preferences,
-      keysPsrefix: 'center_',
-    );
     _isPlatformMoving = false;
     _fluctuationCenterNotifier = ValueNotifier(const Offset(50.0, 50.0));
-    _rotationNotifier = ValueNotifier(const Offset(pi/3, pi/5));
-    _axisXSineNotifier = SineNotifier();
-    _axisYSineNotifier = SineNotifier();
-    _axisZSineNotifier = SineNotifier();
-    _minMaxNotifier = MinMaxNotifier();
-    _tryRecomputeMinMax();
-    _axisXSineNotifier.addListener(_tryRecomputeMinMax);
-    _axisYSineNotifier.addListener(_tryRecomputeMinMax);
-    _axisZSineNotifier.addListener(_tryRecomputeMinMax);
+    _rotationAngleX = SineNotifier(
+      sine: const Sine(
+        amplitude: 0.0,
+        baseline: 0.0,
+      ),
+    );
+    _rotationAngleY = SineNotifier(
+      sine: const Sine(
+        amplitude: 0.0,
+        baseline: 0.0,
+      ),
+    );
+    _baseline = SineNotifier(
+      sine: const Sine(
+        amplitude: 0.0,
+        baseline: 0.0,
+        alwaysGreaterThanZero: true,
+      ),
+    );
+    final angleXMinMax = _rotationAngleX.value.minMax;
+    final angleYMinMax = _rotationAngleY.value.minMax;
+    _angleMinMaxNotifier = MinMaxNotifier(
+      minMax: MinMax(
+        min: min(angleXMinMax.min, angleYMinMax.min),
+        max: max(angleXMinMax.max, angleYMinMax.max),
+      ),
+    );
+    _baselineMinMaxNotifier = MinMaxNotifier(
+      minMax: MinMax(
+        min: 0.0,
+        max: widget._cilinderMaxHeight,
+      ),
+    );
+    _rotationAngleX.addListener(() {
+      final newMinMax = _rotationAngleX.value.minMax;
+      final currentYMinMax = _rotationAngleY.value.minMax;
+      _angleMinMaxNotifier.value = MinMax(
+        min: min(newMinMax.min, currentYMinMax.min),
+        max: max(newMinMax.max, currentYMinMax.max),
+      );
+    });
+     _rotationAngleY.addListener(() {
+      final newYMinMax = _rotationAngleY.value.minMax;
+      final currentXMinMax = _rotationAngleX.value.minMax;
+      _angleMinMaxNotifier.value = MinMax(
+        min: min(newYMinMax.min, currentXMinMax.min),
+        max: max(newYMinMax.max, currentXMinMax.max),
+      );
+    });
     _platform = StewartPlatform(
       controlFrequency: widget._controlFrequency,
       reportFrequency: widget._reportFrequency,
@@ -109,77 +125,62 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
         });
       }
     );
-    _retrieveValues();
+    _lengthsStream = _platform.state.transform(
+      StreamTransformer.fromHandlers(
+        handleData: (state, sink) {
+          final now = DsTimeStamp.now().toString();
+          final position = state.beamsPosition;
+          final dataToAdd = [position.cilinder1, position.cilinder2, position.cilinder3];
+          for(int i = 0; i<dataToAdd.length; i++) {
+            sink.add(
+              DsDataPoint<double>(
+                type: DsDataType.real,
+                name: DsPointName('/cilinder$i'),
+                value: dataToAdd[i],
+                status: DsStatus.ok,
+                timestamp: now,
+                cot: DsCot.inf,
+              ),
+            );
+          }
+        },
+      ),
+    );
     super.initState();
   }
   //
   @override
   void dispose() {
-    _axisXSineNotifier.dispose();
-    _axisYSineNotifier.dispose();
-    _axisZSineNotifier.dispose();
-    _minMaxNotifier.dispose();
+    _rotationAngleX.dispose();
+    _rotationAngleY.dispose();
+    _baseline.dispose();
     _fluctuationCenterNotifier.dispose();
+    _platform.dispose();
     super.dispose();
   }
-  ///
-  Future<void> _retrieveValues() async {
-    return Future.wait([
-      _xStorage.retrieve().then((value) {
-        _axisXSineNotifier.value = value;
-      }),
-      _yStorage.retrieve().then((value) {
-        _axisYSineNotifier.value = value;
-      }),
-      _zStorage.retrieve().then((value) {
-        _axisZSineNotifier.value = value;
-      }),
-      _centerStorage.retrieve().then((value) {
-        _fluctuationCenterNotifier.value = value;
-      }),
-    ]).then((_) => _showInfo('Параметры загружены'));
-  }
-  ///
-  Future<void> _saveValues() {
-    return Future.wait([
-      _xStorage.store(_axisXSineNotifier.value),
-      _yStorage.store(_axisXSineNotifier.value),
-      _zStorage.store(_axisXSineNotifier.value),
-      _centerStorage.store(_fluctuationCenterNotifier.value),
-    ]).then((_) => _showInfo('Параметры сохранены'));
-  }
-  ///
-  void _showInfo(String message) {
-    toastification.show(
-      alignment: Alignment.topCenter,
-      showProgressBar: false,
-      type: ToastificationType.info,
-      style: ToastificationStyle.flat,
-      backgroundColor: Theme.of(context).colorScheme.background,
-      foregroundColor: Theme.of(context).colorScheme.onBackground,
-      context: context,
-      title: Text(message),
-      autoCloseDuration: const Duration(seconds: 2),
-    );
-  }
-  ///
-  void _tryRecomputeMinMax() {
-    final axis1MinMax = _axisXSineNotifier.value.minMax;
-    final axis2MinMax = _axisYSineNotifier.value.minMax;
-    final axis3MinMax = _axisZSineNotifier.value.minMax;
-    _minMaxNotifier.value =MinMax(
-      min: [axis1MinMax.min, axis2MinMax.min, axis3MinMax.min].reduce(min), 
-      max: [axis1MinMax.max, axis2MinMax.max, axis3MinMax.max].reduce(max), 
-    );
-  }
+  // ///
+  // void _showInfo(String message) {
+  //   toastification.show(
+  //     alignment: Alignment.topCenter,
+  //     showProgressBar: false,
+  //     type: ToastificationType.info,
+  //     style: ToastificationStyle.flat,
+  //     backgroundColor: Theme.of(context).colorScheme.background,
+  //     foregroundColor: Theme.of(context).colorScheme.onBackground,
+  //     context: context,
+  //     title: message,
+  //     autoCloseDuration: const Duration(seconds: 2),
+  //   );
+  // }
   ///
   @override
   Widget build(BuildContext context) {
+    const horizontalRadius = cilindersPlacementRadius*sqrt3/2;
     return LayoutBuilder(
       builder: (context, constraints) {
         return Scaffold(
           appBar: PlatformControlAppBar(
-            onSave: _saveValues,
+            onSave: () {}, //_saveValues,
             onStartFluctuations:  _onStartFluctuations,
             onPlatformStop: _platform.stop,
             isPlatformMoving: _isPlatformMoving,
@@ -188,15 +189,55 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
             children: [
               Expanded(
                 flex: 3,
-                child: PlatformBeamsSines(
-                  axisXSineNotifier: _axisXSineNotifier,
-                  minMaxNotifier: _minMaxNotifier,
-                  axisYSineNotifier: _axisYSineNotifier,
-                  axisZSineNotifier: _axisZSineNotifier,
-                  cilinderMaxHeight: widget._cilinderMaxHeight,
-                  amplitudeConstraints: widget._amplitudeConstraints,
-                  periodConstraints: widget._periodConstraints,
-                  phaseShiftConstraints: widget._phaseShiftConstraints,
+                child: AnimatedSwitcher(
+                  switchInCurve: Curves.easeIn,
+                  switchOutCurve: Curves.easeOut,
+                  duration: const Duration(milliseconds: 300),
+                  transitionBuilder: (child, animation) => ScaleTransition(
+                    scale: animation,
+                    child: FadeTransition(
+                      opacity: animation,
+                      child: child,
+                    ),
+                  ),
+                  child: switch(_isPlatformMoving) {
+                    true => LiveChartWidget(
+                      minX: DateTime.now().subtract(const Duration(seconds: 6))
+                        .millisecondsSinceEpoch.toDouble(),
+                      xInterval: 6000,
+                      axes: [
+                        LiveAxis(
+                          bufferLength: 4000,
+                          stream: _lengthsStream,
+                          signalName: 'cilinder0',
+                          caption: 'Цилиндр I',
+                          color: Colors.purpleAccent,
+                        ),
+                        LiveAxis(
+                          bufferLength: 4000,
+                          stream: _lengthsStream,
+                          signalName: 'cilinder1',
+                          caption: 'Цилиндр II',
+                          color: Colors.greenAccent,
+                        ),
+                        LiveAxis(
+                          bufferLength: 4000,
+                          stream: _lengthsStream,
+                          signalName: 'cilinder2',
+                          caption: 'Цилиндр III',
+                          color: Colors.orangeAccent,
+                        ),
+                      ],
+                    ),
+                    false => PlatformAngleSines(
+                      baselineMinMax: _baselineMinMaxNotifier,
+                      anglesMinMax: _angleMinMaxNotifier,  
+                      isDisabled: _isPlatformMoving,              
+                      rotationAngleX: _rotationAngleX,
+                      rotationAngleY: _rotationAngleY,
+                      baseline: _baseline,
+                    ),
+                  },
                 ),
               ),
               Expanded(
@@ -209,37 +250,113 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
                       children: [
                         Row(
                           children: [
-                            const Text(
-                              'Центр колебаний: '
+                            Expanded(
+                              flex: 2,
+                              child: Row(
+                                children: [
+                                  ColoredCoords(
+                                    xText: TextSpan(
+                                      style: const TextStyle(color: Colors.redAccent),
+                                      children: [
+                                        const TextSpan(text: 'x'),
+                                        WidgetSpan(
+                                          child: Transform.translate(
+                                            offset: const Offset(2, 4),
+                                            child: const Text(
+                                              'O',
+                                              textScaler: TextScaler.linear(0.8),
+                                              style: TextStyle(color: Colors.redAccent),
+                                            ),
+                                          ),
+                                        ),
+                                        WidgetSpan(
+                                          child: Transform.translate(
+                                            offset: const Offset(2, 4),
+                                            child: const Text(
+                                              'y ',
+                                              textScaler: TextScaler.linear(0.6),
+                                              style: TextStyle(color: Colors.redAccent),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    yText: TextSpan(
+                                      style: const TextStyle(color: Colors.blueAccent),
+                                      children: [
+                                        const TextSpan(text: 'y'),
+                                        WidgetSpan(
+                                          child: Transform.translate(
+                                            offset: const Offset(2, 4),
+                                            child: const Text(
+                                              'O',
+                                              textScaler: TextScaler.linear(0.8),
+                                              style: TextStyle(color: Colors.blueAccent),
+                                            ),
+                                          ),
+                                        ),
+                                        WidgetSpan(
+                                          child: Transform.translate(
+                                            offset: const Offset(2, 4),
+                                            child: const Text(
+                                              'x ',
+                                              textScaler: TextScaler.linear(0.6),
+                                              style: TextStyle(color: Colors.blueAccent),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Text(':'),
+                                ],
+                              ),
                             ),
                             const Spacer(),
-                            FluctuationCenterCoords(
-                              fluctuationCenter: _fluctuationCenterNotifier,
+                            Expanded(
+                              flex: 3,
+                              child: FluctuationCenterCoords(
+                                fluctuationCenter: _fluctuationCenterNotifier,
+                              ),
+                            ),
+                            const Spacer(),
+                            Expanded(
+                              flex: 2,
+                              child: IconButton(
+                                onPressed: _isPlatformMoving ? null : () {
+                                  _fluctuationCenterNotifier.value = const Offset(0.0, 0.0);
+                                },
+                                icon: const Icon(Icons.cancel)),
                             ),
                           ],
                         ),
                         const SizedBox(height: 8),
-                        // FluctuationTopProjection(
-                        //   realPlatformDimention: 800,
-                        //   fluctuationCenter: _fluctuationCenterNotifier,
-                        // ),
-                        // const SizedBox(height: 8),
                         Expanded(
                           child: FluctuationSideProjection(
-                            type: ProjectionType.horizontal,
+                            borderValues: const MinMax(
+                              min: -horizontalRadius, 
+                              max: horizontalRadius,
+                            ),
+                            isPlatformMoving: _isPlatformMoving,
+                            type: RotationAxis.y,
                             realPlatformDimention: widget._realPlatformDimension,
                             fluctuationCenter: _fluctuationCenterNotifier,
-                            rotation: _rotationNotifier,
+                            platformState: _platform.state,
                             pointSize: 9,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Expanded(
                           child: FluctuationSideProjection(
-                            type: ProjectionType.vertical,
+                            borderValues: const MinMax(
+                              min: -cilindersPlacementRadius/2, 
+                              max: cilindersPlacementRadius,
+                            ),
+                            isPlatformMoving: _isPlatformMoving,
+                            type: RotationAxis.x,
                             realPlatformDimention: widget._realPlatformDimension,
                             fluctuationCenter: _fluctuationCenterNotifier,
-                            rotation: _rotationNotifier,
+                            platformState: _platform.state,
                             pointSize: 9,
                           ),
                         ),
@@ -256,11 +373,34 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
   }
   //
   void _onStartFluctuations() {
+    setState(() {
+      _isPlatformMoving = true;
+    });
     _platform.startFluctuations(
-      xSine: _axisXSineNotifier.value,
-      ySine: _axisYSineNotifier.value,
-      zSine: _axisZSineNotifier.value,
+      _generateFluctuationFunction(),
     );
-    _platform.startReportingPosition();
+  }
+  ///
+  TimeMapping<PlatformState> _generateFluctuationFunction() {
+    final phiXSine = _rotationAngleX.value;
+    final phiYSine =  _rotationAngleY.value;
+    final lengthsFunction = FluctuationLengthsFunction(
+      fluctuationCenter: _fluctuationCenterNotifier.value,
+      phiXSine: phiXSine,
+      phiYSine: phiYSine,
+      baselineSine: _baseline.value,
+    );
+    return TimeMapping(
+      mapping: Mapping.generic(
+        (seconds) {
+          final lengths = lengthsFunction.of(seconds);
+          return PlatformState(
+            beamsPosition: lengths,
+            fluctuationAngles: Offset(phiXSine.of(seconds), phiYSine.of(seconds)),
+          );
+        },
+      ),
+      frequency: const Duration(milliseconds: 10),
+    );
   }
 }

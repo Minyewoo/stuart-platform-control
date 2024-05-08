@@ -3,11 +3,11 @@ import 'package:stewart_platform_control/core/io/controller/package/app_data_fie
 ///
 class PlatformBeamsPainter extends CustomPainter {
   final double _scaleY;
-  final Position3f _position;
+  final Position3i _position;
   ///
   const PlatformBeamsPainter({
     super.repaint,
-    required Position3f position,
+    required Position3i position,
     double scaleY = 1.0,
   }) : 
     _position = position,

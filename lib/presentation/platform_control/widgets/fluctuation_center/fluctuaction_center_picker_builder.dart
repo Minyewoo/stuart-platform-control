@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:stewart_platform_control/core/math/min_max.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/fluctuation_center/fluctuation_side_projection.dart';
 ///
 class FluctuationCenterPickerBuilder extends StatelessWidget {
+  final MinMax _borderValues;
   final ValueNotifier<Offset> _fluctuationCenter;
   final double _realPlatformDimention;
-  final ProjectionType _projectionType;
+  final double _centerOffset;
+  final RotationAxis _projectionType;
   final Widget Function(BuildContext, BoxConstraints, Offset, double)? _builder;
+  final bool _isInteractive;
+  final double _reverseFactor;
   ///
-  const FluctuationCenterPickerBuilder({
+  FluctuationCenterPickerBuilder({
     super.key,
     required double realPlatformDimention,
     required ValueNotifier<Offset> fluctuationCenter,
-    ProjectionType projectionType = ProjectionType.both,
+    RotationAxis projectionType = RotationAxis.both,
+    bool isInteractive = true,
+    bool isAxisReversed = false,
+    MinMax? borderValues,
     Widget Function(
       BuildContext context,
       BoxConstraints constraints,
@@ -22,7 +30,11 @@ class FluctuationCenterPickerBuilder extends StatelessWidget {
     _fluctuationCenter = fluctuationCenter,
     _projectionType = projectionType, 
     _builder = builder,
-    _realPlatformDimention = realPlatformDimention;
+    _borderValues = borderValues ??  MinMax(min: -realPlatformDimention/2, max: realPlatformDimention/2),
+    _isInteractive = isInteractive,
+    _reverseFactor = isAxisReversed ? -1 : 1,
+    _realPlatformDimention = realPlatformDimention,
+    _centerOffset = realPlatformDimention/2;
   //
   @override
   Widget build(BuildContext context) {
@@ -31,18 +43,18 @@ class FluctuationCenterPickerBuilder extends StatelessWidget {
         final widgetDimension = constraints.maxWidth;
         final coordsFactor = _realPlatformDimention/widgetDimension;
         return GestureDetector(
-          onTapDown: (details) => _updateFluctuationCenter(
+          onTapDown: _isInteractive ? (details) => _updateFluctuationCenter(
             details.localPosition,
             coordsFactor,
-          ),
-          onVerticalDragUpdate: (details) => _updateFluctuationCenter(
+          ) : null,
+          onVerticalDragUpdate: _isInteractive ? (details) => _updateFluctuationCenter(
             details.localPosition,
             coordsFactor,
-          ),
-          onHorizontalDragUpdate: (details) => _updateFluctuationCenter(
+          ) : null,
+          onHorizontalDragUpdate: _isInteractive ? (details) => _updateFluctuationCenter(
             details.localPosition,
             coordsFactor,
-          ),
+          ) : null,
           child: ValueListenableBuilder(
             valueListenable: _fluctuationCenter,
             builder: (context, fluctuationCenter, _) {
@@ -50,7 +62,7 @@ class FluctuationCenterPickerBuilder extends StatelessWidget {
               return _builder?.call(
                 context,
                 constraints,
-                fluctuationCenter/coordsFactor,
+                (fluctuationCenter*_reverseFactor+Offset(_centerOffset, _centerOffset))/coordsFactor,
                 coordsFactor,
               ) ?? const SizedBox();
             }
@@ -61,12 +73,16 @@ class FluctuationCenterPickerBuilder extends StatelessWidget {
   }
   ///
   void _updateFluctuationCenter(Offset newCenter, double factor) {
-    final newDx = (newCenter.dx*factor).clamp(0.0, _realPlatformDimention).roundToDouble();
-    final newDy = (newCenter.dy*factor).clamp(0.0, _realPlatformDimention).roundToDouble();
+    print(newCenter);
+    final newOffset = (newCenter*factor-Offset(_centerOffset, _centerOffset));
+    final clampedOffset = Offset(
+      newOffset.dx.clamp(_borderValues.min, _borderValues.max).roundToDouble(),
+      newOffset.dy.clamp(_borderValues.min, _borderValues.max).roundToDouble(),
+    );
     _fluctuationCenter.value = switch(_projectionType){
-      ProjectionType.horizontal => Offset(newDx, _fluctuationCenter.value.dy),
-      ProjectionType.vertical =>Offset(_fluctuationCenter.value.dx, newDx),
-      ProjectionType.both => Offset(newDx, newDy),
+      RotationAxis.x => Offset(clampedOffset.dx*_reverseFactor, _fluctuationCenter.value.dy),
+      RotationAxis.y => Offset(_fluctuationCenter.value.dx, clampedOffset.dy*_reverseFactor),
+      RotationAxis.both => Offset(clampedOffset.dx, clampedOffset.dy),
     };
   }
 }

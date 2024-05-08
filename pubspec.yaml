@@ -13,12 +13,20 @@ dependencies:
     git:
       url: https://github.com/a-givertzman/hmi_core.git
       ref: 2.0.0
+  hmi_widgets:
+    git:
+      url: https://github.com/a-givertzman/hmi_widgets.git
+      ref: 1.0.1
+  cma_registrator:
+    git:
+      url: https://github.com/a-givertzman/cma_registrator.git
+      ref: 0.0.2
   fl_chart:
     git:
       url: https://github.com/a-givertzman/fl_chart.git
       ref: 0.63.0+2
   shared_preferences: ^2.2.3
-  toastification: ^1.2.1
+  toastification: ^1.0.0
   window_manager: ^0.3.8
   ditredi: ^2.0.2
   vector_math: ^2.1.4

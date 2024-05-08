@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'package:hmi_core/hmi_core_result_new.dart';
+import 'package:stewart_platform_control/core/entities/cilinders_extractions.dart';
 import 'package:stewart_platform_control/core/io/controller/package/app_control_field/app_control_field.dart';
 import 'package:stewart_platform_control/core/io/controller/package/app_control_field/confirm_code.dart';
 import 'package:stewart_platform_control/core/io/controller/package/app_control_field/function_code.dart';
@@ -38,7 +39,7 @@ import 'package:stewart_platform_control/core/net_address.dart';
 
 ///
 class MdboxController {
-  static const _positionFactor = 1000;
+  static const _positionFactor = 1000000;
   final NetAddress _myAddress;
   final NetAddress _controllerAddress;
   final _responseController = StreamController<UdpData>.broadcast();
@@ -160,8 +161,8 @@ class MdboxController {
     }
   }
   ///
-  Future<ResultF<void>> sendPosition3f(
-    Position3f position, {
+  Future<ResultF<void>> sendPosition3i(
+    CilinderLengths lengths, {
       Duration time = const Duration(milliseconds: 1),
     }) async {
     await _maybeStartSocket();
@@ -182,10 +183,11 @@ class MdboxController {
         dataField: ThreeAxesDataField(
           lineNumber: 1,
           time: time.inMilliseconds,
-          position: position.copyWith(
-            x: position.x * _positionFactor,
-            y: position.y * _positionFactor,
-            z: position.z * _positionFactor,
+          // TODO check cilinder binding (old: X,Y,Z)
+          position: Position3i.fromValue(
+            x: (lengths.cilinder1 * _positionFactor).round(),
+            y: (lengths.cilinder2 * _positionFactor).round(),
+            z: (lengths.cilinder3 * _positionFactor).round(),
           ),
         ),
       ).bytes.toList(),
@@ -198,7 +200,7 @@ class MdboxController {
     return const Ok(null);
   }
   ///
-  Future<ResultF<void>> sendPosition6f(Position6f position) async {
+  Future<ResultF<void>> sendPosition6i(Position6i position) async {
    await _maybeStartSocket();
     final socket = _socket!;
     socket.writeEventsEnabled = true;

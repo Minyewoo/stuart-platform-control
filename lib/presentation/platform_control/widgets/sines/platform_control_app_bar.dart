@@ -28,18 +28,18 @@ class PlatformControlAppBar extends StatelessWidget implements PreferredSizeWidg
         final isTight = constraints.maxWidth < 1000;
         return AppBar(
           actions: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: isTight ? IconButton(
-                onPressed: _onSaveSines, 
-                icon: const Icon(Icons.save),
-                tooltip: 'Сохранить параметры',
-              ) : FilledButton.icon(
-                onPressed: _onSaveSines, 
-                icon: const Icon(Icons.save), 
-                label: isTight ? const SizedBox() : const Text('Сохранить параметры'),
-              ),
-            ),
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            //   child: isTight ? IconButton(
+            //     onPressed: _onSaveSines, 
+            //     icon: const Icon(Icons.save),
+            //     tooltip: 'Сохранить параметры',
+            //   ) : FilledButton.icon(
+            //     onPressed: _onSaveSines, 
+            //     icon: const Icon(Icons.save), 
+            //     label: isTight ? const SizedBox() : const Text('Сохранить параметры'),
+            //   ),
+            // ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: isTight ? Tooltip(
@@ -62,11 +62,11 @@ class PlatformControlAppBar extends StatelessWidget implements PreferredSizeWidg
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: isTight ? IconButton(
-                onPressed: _onStartFluctuations,
+                onPressed: _isPlatformMoving ? null : _onStartFluctuations,
                 icon: const Icon(Icons.play_arrow),
                 tooltip: 'Начать движение',
               ) : FilledButton.icon(
-                onPressed: _onStartFluctuations,
+                onPressed: _isPlatformMoving ? null : _onStartFluctuations,
                 icon: const Icon(Icons.play_arrow),
                 label: const Text('Начать движение'),
               ),

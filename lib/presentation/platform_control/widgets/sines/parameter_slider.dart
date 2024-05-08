@@ -60,6 +60,7 @@ class ParameterSlider<T> extends StatelessWidget {
               ],
             ),
             Slider(
+              
               value: sliderValue,
               min: _minMax.min,
               max: _minMax.max,

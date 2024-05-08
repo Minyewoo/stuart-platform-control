@@ -4,10 +4,10 @@ import 'package:stewart_platform_control/core/io/controller/package/app_data_fie
 import 'package:vector_math/vector_math_64.dart';
 
 class PlarformBeamsWidget extends StatefulWidget {
-  final Position3f _position;
+  final Position3i _position;
   const PlarformBeamsWidget({
     super.key,
-    required Position3f position,
+    required Position3i position,
   }) : _position = position;
 
   @override

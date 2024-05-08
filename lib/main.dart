@@ -7,7 +7,8 @@ import 'package:stewart_platform_control/main_app.dart';
 import 'package:window_manager/window_manager.dart';
 //
 Future<void> main() async {
-  const log = Log('main');
+  hierarchicalLoggingEnabled = true;
+  final log = const Log('main')..level=LogLevel.all;
   const fileConfig = FileConfig(
     file: TextFile.asset('assets/configs/app-config.json'),
   );

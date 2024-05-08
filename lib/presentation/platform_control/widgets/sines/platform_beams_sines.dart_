@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stewart_platform_control/core/math/min_max.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/min_max_notifier.dart';
-import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/sine_control_widget.dart';
+import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/extraction_sine_control_widget.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/sine_notifier.dart';
 
 ///
@@ -46,7 +46,7 @@ class PlatformBeamsSines extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: chartsPadding,
-              child: SineControlWidget(
+              child: ExtractionSineControlWidget(
                 cilinderMaxHeight: _cilinderMaxHeight,
                 amplitudeConstraints: _amplitudeConstraints,
                 perionConstraints: _periodConstraints,
@@ -60,7 +60,7 @@ class PlatformBeamsSines extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: chartsPadding,
-              child: SineControlWidget(
+              child: CilinderSineControlWidget(
                 cilinderMaxHeight: _cilinderMaxHeight,
                 amplitudeConstraints: _amplitudeConstraints,
                 perionConstraints: _periodConstraints,
@@ -74,7 +74,7 @@ class PlatformBeamsSines extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: chartsPadding,
-              child: SineControlWidget(
+              child: CilinderSineControlWidget(
                 cilinderMaxHeight: _cilinderMaxHeight,
                 amplitudeConstraints: _amplitudeConstraints,
                 perionConstraints: _periodConstraints,
