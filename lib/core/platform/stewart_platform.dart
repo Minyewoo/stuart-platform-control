@@ -10,8 +10,10 @@ class StewartPlatform {
   final MdboxController _controller;
   final void Function()? _onStartControl;
   final void Function()? _onStopControl;
-  TimeMapping<PlatformState>? _continousPosition;
+  final void Function(String)? _onStatusReport;
   final _stateController = StreamController<PlatformState>.broadcast();
+  TimeMapping<PlatformState>? _continousPosition;
+  bool _isStopped = false; 
   ///
   StewartPlatform({
     required Duration controlFrequency,
@@ -19,8 +21,10 @@ class StewartPlatform {
     required MdboxController controller,
     void Function()? onStartControl,
     void Function()? onStopControl,
+    void Function(String message)? onStatusReport,
   }) :
     _controller = controller,
+    _onStatusReport = onStatusReport,
     _onStartControl = onStartControl,
     _onStopControl = onStopControl;
   ///
@@ -30,60 +34,78 @@ class StewartPlatform {
     _continousPosition?.stop();
     _continousPosition = continousPosition;
     final starterPosition = _continousPosition!.of(0);
-    await _extractBeamsToStarterPositions(
+    _isStopped = false;
+    await _sendFluctuationStarterPositions(
       starterPosition.beamsPosition,
       starterPosition.fluctuationAngles,
     );
-    _continousPosition!.start();
-    _continousPosition!.addListener(() {
-      _updatePlatformState(_continousPosition!.value);
-    });
-    _onStartControl?.call();
+    if(!_isStopped) {
+      _onStatusReport?.call('Начало колебаний');
+      _continousPosition!.start();
+      _continousPosition!.addListener(() {
+        _updatePlatformState(_continousPosition!.value);
+      });
+      _onStartControl?.call();
+    }
   }
   ///
-  Future<void> extractBeamsToInitialPositions({Duration time = const Duration(seconds: 10)}) {
-    final initialPositioningtime = Duration(milliseconds: (time.inMilliseconds/2).floor());
-    const zeroPosition = CilinderLengths3f();
-    _updatePlatformState(
-      const PlatformState(
-        beamsPosition: zeroPosition,
-        fluctuationAngles: Offset(0,0),
-      ),
-      time: initialPositioningtime,
-    );
-    return Future.delayed(initialPositioningtime);
+  Future<void> setBeamsToInitialPositions({Duration time = const Duration(seconds: 10)}) async {
+    _isStopped = false;
+    await _sendInitialPosition(time: time);
+    _isStopped = true;
+  }
+  Future<void> _sendInitialPosition({Duration time = const Duration(seconds: 10)}) async {
+    if(!_isStopped) {
+      final initialPositioningtime = Duration(milliseconds: time.inMilliseconds);
+      const zeroPosition = CilinderLengths3f();
+      _onStatusReport?.call('Переход в нулевую позицию');
+      _updatePlatformState(
+        const PlatformState(
+          beamsPosition: zeroPosition,
+          fluctuationAngles: Offset(0,0),
+        ),
+        time: initialPositioningtime,
+      );
+      await Future.delayed(initialPositioningtime);
+    }
   }
   ///
-  Future<void> _extractBeamsToStarterPositions(CilinderLengths3f lengths, Offset angles) async {
+  Future<void> _sendFluctuationStarterPositions(CilinderLengths3f lengths, Offset angles) async {
     const rampTimeForMeter = Duration(seconds: 10);
-    await extractBeamsToInitialPositions(time: rampTimeForMeter);
-    final actualRampTime = Duration(
-      milliseconds: (
-        [lengths.cilinder1, lengths.cilinder2, lengths.cilinder3]
-          .reduce(max) * rampTimeForMeter.inMilliseconds
-      ).round(),
-    );
-    _updatePlatformState(
-      PlatformState(
-        beamsPosition: lengths,
-        fluctuationAngles: angles,
-      ),
-      time: actualRampTime,
-    );
-    await Future.delayed(actualRampTime);
+    await _sendInitialPosition(time: rampTimeForMeter);
+    if(!_isStopped) {
+      final actualRampTime = Duration(
+        milliseconds: (
+          [lengths.cilinder1, lengths.cilinder2, lengths.cilinder3]
+            .reduce(max) * rampTimeForMeter.inMilliseconds
+        ).round(),
+      );
+      _onStatusReport?.call('Переход в начальную позицию колебаний');
+      _updatePlatformState(
+        PlatformState(
+          beamsPosition: lengths,
+          fluctuationAngles: angles,
+        ),
+        time: rampTimeForMeter,
+      );
+      await Future.delayed(actualRampTime);
+    }
   }
   ///
   void _updatePlatformState(PlatformState state, {
     Duration time = const Duration(milliseconds: 1),
   }) {
-    _controller.sendPosition3i(
-      state.beamsPosition,
-      time: time,
-    );
-    _stateController.add(state);
+    if(!_isStopped) {
+      _controller.sendPosition3i(
+        state.beamsPosition,
+        time: time,
+      );
+      _stateController.add(state);
+    }
   }
   ///
   void stop() {
+    _isStopped = true;
     _continousPosition?.stop();
     _onStopControl?.call();
   }

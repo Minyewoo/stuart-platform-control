@@ -10,6 +10,6 @@ class ThreeAxesDataFieldMaxTimeCheck implements ValidationCase<ThreeAxesDataFiel
   //
   @override
   bool isSatisfiedBy(ThreeAxesDataField field) {
-    return field.time < _maxTime.inMilliseconds;
+    return field.time <= _maxTime.inMilliseconds;
   }
 }

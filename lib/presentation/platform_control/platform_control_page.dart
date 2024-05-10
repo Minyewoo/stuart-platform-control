@@ -19,6 +19,7 @@ import 'package:stewart_platform_control/presentation/platform_control/widgets/s
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/platform_angle_sines.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/platform_control_app_bar.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/sine_notifier.dart';
+import 'package:stewart_platform_control/presentation/popups/toasts.dart';
 ///
 class PlatformControlPage extends StatefulWidget {
   final double _cilinderMaxHeight;
@@ -122,7 +123,8 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
         setState(() {
           _isPlatformMoving = false;
         });
-      }
+      },
+      onStatusReport: (message) => showInfo(message, context),
     );
     _lengthsStream = _platform.state.transform(
       StreamTransformer.fromHandlers(
@@ -167,7 +169,7 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
           appBar: PlatformControlAppBar(
             onSave: () {}, //_saveValues,
             onStartFluctuations:  _onStartFluctuations,
-            onInitialPositionRequest: _platform.extractBeamsToInitialPositions,
+            onInitialPositionRequest: _platform.setBeamsToInitialPositions,
             onPlatformStop: _platform.stop,
             isPlatformMoving: _isPlatformMoving,
           ),

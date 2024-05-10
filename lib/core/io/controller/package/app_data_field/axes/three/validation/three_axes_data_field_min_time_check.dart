@@ -10,6 +10,6 @@ class ThreeAxesDataFieldMinTimeCheck implements ValidationCase<ThreeAxesDataFiel
   //
   @override
   bool isSatisfiedBy(ThreeAxesDataField field) {
-    return field.time > _minTime.inMilliseconds;
+    return field.time >= _minTime.inMilliseconds;
   }
 }

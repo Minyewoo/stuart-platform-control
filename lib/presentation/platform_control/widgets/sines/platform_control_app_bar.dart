@@ -31,47 +31,16 @@ class PlatformControlAppBar extends StatelessWidget implements PreferredSizeWidg
         final isTight = constraints.maxWidth < 1000;
         return AppBar(
           actions: [
-            // Padding(
-            //   padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            //   child: isTight ? IconButton(
-            //     onPressed: _onSaveSines, 
-            //     icon: const Icon(Icons.save),
-            //     tooltip: 'Сохранить параметры',
-            //   ) : FilledButton.icon(
-            //     onPressed: _onSaveSines, 
-            //     icon: const Icon(Icons.save), 
-            //     label: isTight ? const SizedBox() : const Text('Сохранить параметры'),
-            //   ),
-            // ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: isTight ? IconButton(
                 onPressed: _isPlatformMoving ? null : _onInitialPositionRequest,
                 icon: const Icon(Icons.restart_alt),
-                tooltip: 'Начальное положение',
+                tooltip: 'Нулевая позиция',
               ) : FilledButton.icon(
                 onPressed: _isPlatformMoving ? null : _onInitialPositionRequest,
                 icon: const Icon(Icons.restart_alt),
-                label: const Text('Начальное положение'),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: isTight ? Tooltip(
-                message: _isPlatformMoving 
-                  ? 'Движение в процессе' 
-                  : 'Движение остановлено',
-                child: Icon(
-                    Icons.circle, 
-                    color: _isPlatformMoving ? Colors.greenAccent : null,
-                  ),
-              ) : OutlinedButton.icon(
-                onPressed: _isPlatformMoving ? () {} : null,
-                icon: Icon(
-                  Icons.circle, 
-                  color: _isPlatformMoving ? Colors.greenAccent : null,
-                ), 
-                label: const Text('Движение в процессе'),
+                label: const Text('Нулевая позиция'),
               ),
             ),
             Padding(
@@ -79,11 +48,11 @@ class PlatformControlAppBar extends StatelessWidget implements PreferredSizeWidg
               child: isTight ? IconButton(
                 onPressed: _isPlatformMoving ? null : _onStartFluctuations,
                 icon: const Icon(Icons.play_arrow),
-                tooltip: 'Начать движение',
+                tooltip: 'Старт',
               ) : FilledButton.icon(
                 onPressed: _isPlatformMoving ? null : _onStartFluctuations,
                 icon: const Icon(Icons.play_arrow),
-                label: const Text('Начать движение'),
+                label: const Text('Старт'),
               ),
             ),
             Padding(
@@ -91,11 +60,11 @@ class PlatformControlAppBar extends StatelessWidget implements PreferredSizeWidg
               child: isTight ? IconButton(
                 onPressed: _onPlatformStop,
                 icon: const Icon(Icons.stop),
-                tooltip: 'Остановить движение',
+                tooltip: 'Стоп',
               ) : FilledButton.icon(
                 onPressed: _onPlatformStop, 
                 icon: const Icon(Icons.stop), 
-                label: const Text('Остановить движение'),
+                label: const Text('Стоп'),
               ),
             ),
           ],

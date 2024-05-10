@@ -47,7 +47,7 @@ class MdboxController {
   static const _threeAxesDataChecks = ValidationCases<ThreeAxesDataField>(
     cases: [
       ThreeAxesDataFieldMinTimeCheck(minTime: Duration(milliseconds: 1)),
-      ThreeAxesDataFieldMaxTimeCheck(maxTime: Duration(seconds: 30)),
+      ThreeAxesDataFieldMaxTimeCheck(maxTime: Duration(milliseconds: 30000)),
       ThreeAxesDataMinPositionsCheck(minPosition: 0),
       ThreeAxesDataMaxPositionsCheck(maxPosition: 800000),
       ThreeAxesDataPositionsDeltaCheck(maxDelta: 400000),
@@ -93,6 +93,7 @@ class MdboxController {
         z: (lengths.cilinder2 * _positionFactor).round(),
       ),
     );
+    // print('${dataField.position.x}, ${dataField.position.y}, ${dataField.position.z}');
     if(_threeAxesDataChecks.isSatisfiedBy(dataField)) {
       final udpData = UdpData(
         controlField: AppControlField.def(

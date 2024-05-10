@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 ///
-void _showInfo(String message, BuildContext context) {
+void showInfo(String message, BuildContext context) {
   toastification.show(
     alignment: Alignment.topCenter,
     showProgressBar: false,
@@ -11,6 +11,6 @@ void _showInfo(String message, BuildContext context) {
     foregroundColor: Theme.of(context).colorScheme.onBackground,
     context: context,
     title: message,
-    autoCloseDuration: const Duration(seconds: 2),
+    autoCloseDuration: const Duration(seconds: 3),
   );
 }

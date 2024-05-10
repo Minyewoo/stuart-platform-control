@@ -20,6 +20,6 @@ class ThreeAxesDataPositionsDeltaCheck implements ValidationCase<ThreeAxesDataFi
   }
   ///
   bool _isDeltaValid(int coord, int otherCoord) {
-    return (coord - otherCoord).abs() < _maxDelta;
+    return (coord - otherCoord).abs() <= _maxDelta;
   }
 }

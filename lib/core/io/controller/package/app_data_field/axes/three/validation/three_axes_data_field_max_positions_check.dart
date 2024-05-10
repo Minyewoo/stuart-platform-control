@@ -12,6 +12,6 @@ class ThreeAxesDataMaxPositionsCheck implements ValidationCase<ThreeAxesDataFiel
   bool isSatisfiedBy(ThreeAxesDataField field) {
     final position = field.position;
     return [position.x, position.y, position.z]
-      .every((coord) => coord < _maxPosition);
+      .every((coord) => coord <= _maxPosition);
   }
 }
