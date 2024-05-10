@@ -1,3 +1,3 @@
-# stewart_platform_control
+# Stewart platform control
 
 An app to control Stewart platform fluctuations.
