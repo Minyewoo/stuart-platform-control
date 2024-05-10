@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:hmi_core/hmi_core.dart';
 import 'package:hmi_widgets/hmi_widgets.dart';
-import 'package:stewart_platform_control/core/entities/cilinders_extractions.dart';
+import 'package:stewart_platform_control/core/entities/cilinders_extractions_3f.dart';
 import 'package:stewart_platform_control/core/io/controller/mdbox_controller.dart';
 import 'package:stewart_platform_control/core/math/mapping/fluctuation_lengths_mapping.dart';
 import 'package:stewart_platform_control/core/math/mapping/time_mapping.dart';
@@ -19,7 +19,6 @@ import 'package:stewart_platform_control/presentation/platform_control/widgets/s
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/platform_angle_sines.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/platform_control_app_bar.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/sine_notifier.dart';
-import 'package:vector_math/vector_math_64.dart' hide Colors;
 ///
 class PlatformControlPage extends StatefulWidget {
   final double _cilinderMaxHeight;
@@ -60,7 +59,7 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
   @override
   void initState() {
     _isPlatformMoving = false;
-    _fluctuationCenterNotifier = ValueNotifier(const Offset(50.0, 50.0));
+    _fluctuationCenterNotifier = ValueNotifier(const Offset(0.0, 0.0));
     _rotationAngleX = SineNotifier(
       sine: const Sine(
         amplitude: 0.0,
@@ -134,9 +133,9 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
           for(int i = 0; i<dataToAdd.length; i++) {
             sink.add(
               DsDataPoint<double>(
-                type: DsDataType.real,
+                type: DsDataType.integer,
                 name: DsPointName('/cilinder$i'),
-                value: dataToAdd[i],
+                value: dataToAdd[i]*1000,
                 status: DsStatus.ok,
                 timestamp: now,
                 cot: DsCot.inf,
@@ -158,21 +157,7 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
     _platform.dispose();
     super.dispose();
   }
-  // ///
-  // void _showInfo(String message) {
-  //   toastification.show(
-  //     alignment: Alignment.topCenter,
-  //     showProgressBar: false,
-  //     type: ToastificationType.info,
-  //     style: ToastificationStyle.flat,
-  //     backgroundColor: Theme.of(context).colorScheme.background,
-  //     foregroundColor: Theme.of(context).colorScheme.onBackground,
-  //     context: context,
-  //     title: message,
-  //     autoCloseDuration: const Duration(seconds: 2),
-  //   );
-  // }
-  ///
+  //
   @override
   Widget build(BuildContext context) {
     const horizontalRadius = cilindersPlacementRadius*sqrt3/2;
@@ -182,6 +167,7 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
           appBar: PlatformControlAppBar(
             onSave: () {}, //_saveValues,
             onStartFluctuations:  _onStartFluctuations,
+            onInitialPositionRequest: _platform.extractBeamsToInitialPositions,
             onPlatformStop: _platform.stop,
             isPlatformMoving: _isPlatformMoving,
           ),

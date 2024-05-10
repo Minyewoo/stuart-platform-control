@@ -25,7 +25,7 @@ class MainApp extends StatelessWidget {
           myAddress: _config.myAddress,
           controllerAddress:  _config.controllerAddress,
         ),
-        realPlatformDimension: 800,
+        realPlatformDimension: 0.8,
       ),
       theme: ThemeData.dark(),
     );

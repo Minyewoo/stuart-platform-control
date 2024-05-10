@@ -19,7 +19,7 @@ class Config {
       ipv4: '192.168.15.201',
       port: 7408,
     ),
-    this.cilinderMaxHeight = 900,
+    this.cilinderMaxHeight = 0.900,
     this.amplitudeConstraints = const MinMax(min: 0, max: 300),
     this.periodConstraints = const MinMax(min: 1, max: 15),
     this.phaseShiftConstraints = const MinMax(min: 0, max: 180),

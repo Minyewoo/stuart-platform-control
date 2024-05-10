@@ -1,9 +1,10 @@
 import 'dart:ui';
-import 'package:stewart_platform_control/core/entities/cilinders_extractions.dart';
+import 'package:stewart_platform_control/core/entities/cilinder_lengths_3f.dart';
+import 'package:stewart_platform_control/core/entities/cilinders_extractions_3f.dart';
 import 'package:stewart_platform_control/core/math/mapping/mapping.dart';
 import 'package:stewart_platform_control/core/math/sine.dart';
 ///
-class FluctuationLengthsFunction implements Mapping<double, CilinderLengths> {
+class FluctuationLengthsFunction implements Mapping<double, CilinderLengths3f> {
   final Offset _fluctuationCenter;
   final Sine _phiXSine;
   final Sine _phiYSine;
@@ -24,7 +25,7 @@ class FluctuationLengthsFunction implements Mapping<double, CilinderLengths> {
     _fluctuationCenter = fluctuationCenter;
   //
   @override
-  CilinderLengths of(double t) {
+  CilinderLengths3f of(double t) {
     return lengthsFunction3D.of(
       CilinderLengthsDependencies3D(
         dependencies2D: CilinderLengthsDependencies2D(

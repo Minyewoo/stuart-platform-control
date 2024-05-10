@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:stewart_platform_control/core/canvas/letters/canvas_letter.dart';
-import 'package:stewart_platform_control/core/entities/cilinders_extractions.dart';
-import 'package:stewart_platform_control/core/io/controller/package/app_data_field/axes/three/position_3f.dart';
+import 'package:stewart_platform_control/core/entities/cilinder_lengths_3f.dart';
 import 'package:stewart_platform_control/core/math/min_max.dart';
 import 'package:stewart_platform_control/core/platform/platform_state.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/fluctuation_center/fluctuaction_center_picker_builder.dart';
@@ -42,7 +41,7 @@ class FluctuationSideProjection extends StatelessWidget {
   //
   @override
   Widget build(BuildContext context) {
-    const horizontalRadius = cilindersPlacementRadius*sqrt3/2;
+    // const horizontalRadius = cilindersPlacementRadius*sqrt3/2;
     const containerRadius = BorderRadius.all(Radius.circular(16));
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -102,7 +101,7 @@ class _PlatformStateListener extends StatelessWidget {
     return StreamBuilder(
       initialData: const PlatformState(
         fluctuationAngles: Offset.zero,
-        beamsPosition: CilinderLengths(),
+        beamsPosition: CilinderLengths3f(),
       ),
       stream: _platformState,
       builder: (context, snapshot) {
@@ -114,7 +113,7 @@ class _PlatformStateListener extends StatelessWidget {
               RotationAxis.x => CanvasLetterName.y,
               RotationAxis.both => CanvasLetterName.z,
             },
-            // borderValues: _borderValues,
+            borderValues: _borderValues,
             zAxisColor: Theme.of(context).colorScheme.onSurfaceVariant,
             accentColor: switch(_type) {
               RotationAxis.y => Colors.redAccent,
@@ -122,8 +121,8 @@ class _PlatformStateListener extends StatelessWidget {
               RotationAxis.both => Colors.purpleAccent,
             },
             fluctuationOffset: switch(_type) {
-              RotationAxis.y => _fluctuationCenter.dx,
-              RotationAxis.x => _fluctuationCenter.dy,
+              RotationAxis.y => _fluctuationCenter.dy,
+              RotationAxis.x => _fluctuationCenter.dx,
               RotationAxis.both => _fluctuationCenter.dx,
             },
             rotationRadians: switch(_type) {

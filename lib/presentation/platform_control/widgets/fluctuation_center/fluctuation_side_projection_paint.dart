@@ -7,11 +7,13 @@ import 'package:stewart_platform_control/core/canvas/canvas_items_painter.dart';
 import 'package:stewart_platform_control/core/canvas/canvas_rect.dart';
 import 'package:stewart_platform_control/core/canvas/canvas_point.dart';
 import 'package:stewart_platform_control/core/canvas/letters/canvas_letter.dart';
+import 'package:stewart_platform_control/core/math/min_max.dart';
 ///
 class FluctuationSideProjectionPaint extends StatelessWidget {
   final CanvasLetterName _horizontalAxisName;
   final bool _isReversed;
-  // final MinMax? _borderValues;
+  // TODO(minyewoo): display _borderValues
+  final MinMax? _borderValues;
   final Color _accentColor;
   final Color _zAxisColor;
   final double _fluctuationOffset;
@@ -27,13 +29,13 @@ class FluctuationSideProjectionPaint extends StatelessWidget {
     required double pointSize,
     CanvasLetterName horizontalAxisName = CanvasLetterName.x,
     bool isReversed = false,
-    // MinMax? borderValues,
+    MinMax? borderValues,
   }) :
     _pointSize = pointSize,
     _rotationRadians = rotationRadians,
     _fluctuationOffset = fluctuationOffset,
     _horizontalAxisName = horizontalAxisName,
-    // _borderValues = borderValues,
+    _borderValues = borderValues,
     _zAxisColor = zAxisColor,
     _accentColor = accentColor,
     _isReversed = isReversed;

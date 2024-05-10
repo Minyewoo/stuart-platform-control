@@ -30,29 +30,31 @@ class FluctuationCenterPickerBuilder extends StatelessWidget {
     _fluctuationCenter = fluctuationCenter,
     _projectionType = projectionType, 
     _builder = builder,
-    _borderValues = borderValues ??  MinMax(min: -realPlatformDimention/2, max: realPlatformDimention/2),
+    _borderValues = borderValues == null 
+      ? MinMax(min: -realPlatformDimention*1000/2, max: realPlatformDimention*1000/2) 
+      : MinMax(min: borderValues.min*1000, max: borderValues.max*1000),
     _isInteractive = isInteractive,
     _reverseFactor = isAxisReversed ? -1 : 1,
-    _realPlatformDimention = realPlatformDimention,
-    _centerOffset = realPlatformDimention/2;
+    _realPlatformDimention = realPlatformDimention*1000,
+    _centerOffset = realPlatformDimention*1000/2;
   //
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder:(context, constraints) {
         final widgetDimension = constraints.maxWidth;
-        final coordsFactor = _realPlatformDimention/widgetDimension;
+        final coordsFactor = _realPlatformDimention/(widgetDimension);
         return GestureDetector(
           onTapDown: _isInteractive ? (details) => _updateFluctuationCenter(
-            details.localPosition,
+            details.localPosition.dx,
             coordsFactor,
           ) : null,
           onVerticalDragUpdate: _isInteractive ? (details) => _updateFluctuationCenter(
-            details.localPosition,
+            details.localPosition.dx,
             coordsFactor,
           ) : null,
           onHorizontalDragUpdate: _isInteractive ? (details) => _updateFluctuationCenter(
-            details.localPosition,
+            details.localPosition.dx,
             coordsFactor,
           ) : null,
           child: ValueListenableBuilder(
@@ -62,7 +64,7 @@ class FluctuationCenterPickerBuilder extends StatelessWidget {
               return _builder?.call(
                 context,
                 constraints,
-                (fluctuationCenter*_reverseFactor+Offset(_centerOffset, _centerOffset))/coordsFactor,
+                (fluctuationCenter*1000*_reverseFactor+Offset(_centerOffset, _centerOffset))/coordsFactor,
                 coordsFactor,
               ) ?? const SizedBox();
             }
@@ -72,17 +74,16 @@ class FluctuationCenterPickerBuilder extends StatelessWidget {
     );
   }
   ///
-  void _updateFluctuationCenter(Offset newCenter, double factor) {
-    print(newCenter);
-    final newOffset = (newCenter*factor-Offset(_centerOffset, _centerOffset));
-    final clampedOffset = Offset(
-      newOffset.dx.clamp(_borderValues.min, _borderValues.max).roundToDouble(),
-      newOffset.dy.clamp(_borderValues.min, _borderValues.max).roundToDouble(),
-    );
+  void _updateFluctuationCenter(double newCenterOffset, double factor) {
+    final newOffset = newCenterOffset*factor-_centerOffset;
+    // print(newOffset);
+    // print('${_borderValues.min}, ${_borderValues.max}',);
+    final clampedOffset = newOffset.clamp(_borderValues.min, _borderValues.max).roundToDouble();
     _fluctuationCenter.value = switch(_projectionType){
-      RotationAxis.x => Offset(clampedOffset.dx*_reverseFactor, _fluctuationCenter.value.dy),
-      RotationAxis.y => Offset(_fluctuationCenter.value.dx, clampedOffset.dy*_reverseFactor),
-      RotationAxis.both => Offset(clampedOffset.dx, clampedOffset.dy),
+      RotationAxis.x => Offset(clampedOffset*_reverseFactor/1000, _fluctuationCenter.value.dy),
+      RotationAxis.y => Offset(_fluctuationCenter.value.dx, clampedOffset*_reverseFactor/1000),
+      RotationAxis.both => Offset(clampedOffset, clampedOffset)/1000,
     };
+    // print(_fluctuationCenter.value);
   }
 }

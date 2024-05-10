@@ -1,29 +1,6 @@
 import 'dart:math';
+import 'package:stewart_platform_control/core/entities/cilinder_lengths_3f.dart';
 import 'package:stewart_platform_control/core/math/mapping/mapping.dart';
-///
-class CilinderLengths {
-  final double cilinder1;
-  final double cilinder2;
-  final double cilinder3;
-  ///
-  const CilinderLengths({
-    this.cilinder1 = 0.0,
-    this.cilinder2 = 0.0,
-    this.cilinder3 = 0.0,
-  });
-  ///
-  CilinderLengths addValue(num value) => CilinderLengths(
-    cilinder1: cilinder1+value,
-    cilinder2: cilinder2+value,
-    cilinder3: cilinder3+value,
-  );
-  ///
-  CilinderLengths addLengths(CilinderLengths lengths) => CilinderLengths(
-    cilinder1: cilinder1+lengths.cilinder1,
-    cilinder2: cilinder2+lengths.cilinder2,
-    cilinder3: cilinder3+lengths.cilinder3,
-  );
-}
 ///
 class CilinderLengthsDependencies {
   final double fluctuationAngleRadians;
@@ -56,7 +33,7 @@ class CilinderLengthsDependencies3D {
 }
 /// 
 /// Blue dot projection lengths function
-class CilinderLengthsXFunction implements Mapping<CilinderLengthsDependencies,CilinderLengths> {
+class CilinderLengthsXFunction implements Mapping<CilinderLengthsDependencies,CilinderLengths3f> {
   final double _cilinder1Offset;
   final double _cilinder2Offset;
   final double _cilinder3Offset;
@@ -73,10 +50,10 @@ class CilinderLengthsXFunction implements Mapping<CilinderLengthsDependencies,Ci
   ///
   /// Computes cilinder lengths from y_O_x and phi_x
   @override
-  CilinderLengths of(CilinderLengthsDependencies dependency) {
+  CilinderLengths3f of(CilinderLengthsDependencies dependency) {
     final fluctuationOffset = dependency.fluctuationCenterOffset;
     final angleSine = sin(dependency.fluctuationAngleRadians);
-    return CilinderLengths(
+    return CilinderLengths3f(
       cilinder1: (_cilinder1Offset-fluctuationOffset)*angleSine,
       cilinder2: (_cilinder2Offset-fluctuationOffset)*angleSine,
       cilinder3: (_cilinder3Offset-fluctuationOffset)*angleSine,
@@ -85,7 +62,7 @@ class CilinderLengthsXFunction implements Mapping<CilinderLengthsDependencies,Ci
 }
 ///
 /// Red dot projection lengths function
-class CilinderLengthsYFunction implements Mapping<CilinderLengthsDependencies,CilinderLengths> {
+class CilinderLengthsYFunction implements Mapping<CilinderLengthsDependencies,CilinderLengths3f> {
   final double _cilinder1Offset;
   final double _cilinder2Offset;
   final double _cilinder3Offset;
@@ -102,10 +79,10 @@ class CilinderLengthsYFunction implements Mapping<CilinderLengthsDependencies,Ci
   ///
   /// Computes cilinder lengths from x_O_y and phi_y
   @override
-  CilinderLengths of(CilinderLengthsDependencies dependency) {
+  CilinderLengths3f of(CilinderLengthsDependencies dependency) {
     final fluctuationOffset = dependency.fluctuationCenterOffset;
     final angleSine = sin(dependency.fluctuationAngleRadians);
-    return CilinderLengths(
+    return CilinderLengths3f(
       cilinder1: (fluctuationOffset-_cilinder1Offset)*angleSine,
       cilinder2: (fluctuationOffset-_cilinder2Offset)*angleSine,
       cilinder3: (fluctuationOffset-_cilinder3Offset)*angleSine,
@@ -113,7 +90,7 @@ class CilinderLengthsYFunction implements Mapping<CilinderLengthsDependencies,Ci
   }
 }
 ///
-class CilinderLengthsFunction2D implements Mapping<CilinderLengthsDependencies2D,CilinderLengths> {
+class CilinderLengthsFunction2D implements Mapping<CilinderLengthsDependencies2D,CilinderLengths3f> {
   final CilinderLengthsXFunction _lengthsFunctionX;
   final CilinderLengthsYFunction _lengthsFunctionY;
   ///
@@ -125,7 +102,7 @@ class CilinderLengthsFunction2D implements Mapping<CilinderLengthsDependencies2D
     _lengthsFunctionX = lengthsFunctionX;
   //
   @override
-  CilinderLengths of(CilinderLengthsDependencies2D dependencies2D) {
+  CilinderLengths3f of(CilinderLengthsDependencies2D dependencies2D) {
     final lengthsX = _lengthsFunctionX.of(dependencies2D.dependenciesX);
     final lengthsY = _lengthsFunctionY.of(dependencies2D.dependenciesY);
     return lengthsX.addLengths(lengthsY);
@@ -133,7 +110,7 @@ class CilinderLengthsFunction2D implements Mapping<CilinderLengthsDependencies2D
 }
 
 ///
-class CilinderLengthsFunction3D implements Mapping<CilinderLengthsDependencies3D,CilinderLengths> {
+class CilinderLengthsFunction3D implements Mapping<CilinderLengthsDependencies3D,CilinderLengths3f> {
   final CilinderLengthsFunction2D _lengthsFunction2D;
   ///
   const CilinderLengthsFunction3D({
@@ -142,7 +119,7 @@ class CilinderLengthsFunction3D implements Mapping<CilinderLengthsDependencies3D
     _lengthsFunction2D = lengthsFunction2D;
   //
   @override
-  CilinderLengths of(CilinderLengthsDependencies3D dependencies3D) {
+  CilinderLengths3f of(CilinderLengthsDependencies3D dependencies3D) {
     final lengths2D = _lengthsFunction2D.of(dependencies3D.dependencies2D);
     final baseline = dependencies3D.baseline;
     return lengths2D.addValue(baseline);

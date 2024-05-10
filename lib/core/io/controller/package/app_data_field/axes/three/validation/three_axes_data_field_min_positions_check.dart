@@ -2,16 +2,17 @@ import 'package:stewart_platform_control/core/io/controller/package/app_data_fie
 import 'package:stewart_platform_control/core/validation/validation_case.dart';
 ///
 class ThreeAxesDataMinPositionsCheck implements ValidationCase<ThreeAxesDataField> {
-  final int _maxPosition;
+  final int _minPosition;
   ///
   const ThreeAxesDataMinPositionsCheck({
-    required int maxPosition,
-  }) : _maxPosition = maxPosition;
+    required int minPosition,
+  }) : _minPosition = minPosition;
   //
   @override
   bool isSatisfiedBy(ThreeAxesDataField field) {
+    print('Min position $_minPosition');
     final position = field.position;
     return [position.x, position.y, position.z]
-      .every((coord) => coord < _maxPosition);
+      .every((coord) => coord > _minPosition);
   }
 }

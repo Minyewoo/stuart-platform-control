@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'dart:math' hide log;
 import 'package:flutter/cupertino.dart';
-import 'package:stewart_platform_control/core/entities/cilinders_extractions.dart';
+import 'package:stewart_platform_control/core/entities/cilinder_lengths_3f.dart';
 import 'package:stewart_platform_control/core/io/controller/mdbox_controller.dart';
-import 'package:stewart_platform_control/core/io/controller/package/app_data_field/axes/three/position_3f.dart';
 import 'package:stewart_platform_control/core/math/mapping/time_mapping.dart';
 import 'package:stewart_platform_control/core/platform/platform_state.dart';
 ///
@@ -42,45 +41,45 @@ class StewartPlatform {
     _onStartControl?.call();
   }
   ///
-  Future<void> extractBeamsToInitialPositions() {
-    const rampTimeForMeter = Duration(seconds: 10);
-    final initialPositioningtime = Duration(milliseconds: (rampTimeForMeter.inMilliseconds/2).floor());
-    const zeroPosition = CilinderLengths();
-    // _controller.sendPosition3i(zeroPosition, time: initialPositioningtime);
-    _stateController.add(
+  Future<void> extractBeamsToInitialPositions({Duration time = const Duration(seconds: 10)}) {
+    final initialPositioningtime = Duration(milliseconds: (time.inMilliseconds/2).floor());
+    const zeroPosition = CilinderLengths3f();
+    _updatePlatformState(
       const PlatformState(
         beamsPosition: zeroPosition,
         fluctuationAngles: Offset(0,0),
       ),
+      time: initialPositioningtime,
     );
     return Future.delayed(initialPositioningtime);
   }
   ///
-  Future<void> _extractBeamsToStarterPositions(CilinderLengths lengths, Offset angles) async {
+  Future<void> _extractBeamsToStarterPositions(CilinderLengths3f lengths, Offset angles) async {
     const rampTimeForMeter = Duration(seconds: 10);
-    await extractBeamsToInitialPositions();
+    await extractBeamsToInitialPositions(time: rampTimeForMeter);
     final actualRampTime = Duration(
       milliseconds: (
-        // TODO check cilinder binding (old: X,Y,Z)
         [lengths.cilinder1, lengths.cilinder2, lengths.cilinder3]
-          .reduce(max) / 1000 * rampTimeForMeter.inMilliseconds
+          .reduce(max) * rampTimeForMeter.inMilliseconds
       ).round(),
     );
-    // _controller.sendPosition3f(
-    //   position,
-    //   time: actualRampTime,
-    // );
-    _stateController.add(
+    _updatePlatformState(
       PlatformState(
         beamsPosition: lengths,
         fluctuationAngles: angles,
       ),
+      time: actualRampTime,
     );
     await Future.delayed(actualRampTime);
   }
   ///
-  void _updatePlatformState(PlatformState state) {
-    // _controller.sendPosition3f(state.beamsPosition);
+  void _updatePlatformState(PlatformState state, {
+    Duration time = const Duration(milliseconds: 1),
+  }) {
+    _controller.sendPosition3i(
+      state.beamsPosition,
+      time: time,
+    );
     _stateController.add(state);
   }
   ///

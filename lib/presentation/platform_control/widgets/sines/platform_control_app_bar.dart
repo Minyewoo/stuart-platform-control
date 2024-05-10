@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 ///
 class PlatformControlAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool _isPlatformMoving;
-  final void Function() _onSaveSines;
+  // final void Function() _onSaveSines;
   final void Function() _onStartFluctuations;
+  final void Function() _onInitialPositionRequest;
   final void Function() _onPlatformStop;
   @override
   final Size preferredSize;
@@ -12,6 +13,7 @@ class PlatformControlAppBar extends StatelessWidget implements PreferredSizeWidg
     super.key,
     required void Function() onSave,
     required void Function() onStartFluctuations,
+    required void Function() onInitialPositionRequest,
     required void Function() onPlatformStop,
     required bool isPlatformMoving, 
     this.preferredSize = const Size.fromHeight(kToolbarHeight),
@@ -19,7 +21,8 @@ class PlatformControlAppBar extends StatelessWidget implements PreferredSizeWidg
     _isPlatformMoving = isPlatformMoving, 
     _onPlatformStop = onPlatformStop,
     _onStartFluctuations = onStartFluctuations,
-    _onSaveSines = onSave;
+    _onInitialPositionRequest = onInitialPositionRequest;
+    // _onSaveSines = onSave;
   //
   @override
   Widget build(BuildContext context) {
@@ -40,6 +43,18 @@ class PlatformControlAppBar extends StatelessWidget implements PreferredSizeWidg
             //     label: isTight ? const SizedBox() : const Text('Сохранить параметры'),
             //   ),
             // ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: isTight ? IconButton(
+                onPressed: _isPlatformMoving ? null : _onInitialPositionRequest,
+                icon: const Icon(Icons.restart_alt),
+                tooltip: 'Начальное положение',
+              ) : FilledButton.icon(
+                onPressed: _isPlatformMoving ? null : _onInitialPositionRequest,
+                icon: const Icon(Icons.restart_alt),
+                label: const Text('Начальное положение'),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: isTight ? Tooltip(

@@ -35,15 +35,15 @@ class PlatformAngleSines extends StatelessWidget {
     const chartsPadding = EdgeInsets.only(top: 8.0, right: 16.0);
     const angleAmplitudeConstraints = MinMax(
       min: 0,
-      max: 30,
+      max: 20,
     );
     const baselineAmplitudeConstraints = MinMax(
       min: 0,
-      max: 500,
+      max: 400,
     );
     const periodConstraints = MinMax(
       min: 1,
-      max: 6,
+      max: 10,
     );
     const phaseShiftConstraints = MinMax(
       min: 0,

@@ -14,6 +14,7 @@ import 'package:stewart_platform_control/core/io/controller/package/app_data_fie
 import 'package:stewart_platform_control/core/io/controller/package/app_data_field/axes/three/validation/three_axes_data_field_coords_delta_check.dart';
 import 'package:stewart_platform_control/core/io/controller/package/app_data_field/axes/three/validation/three_axes_data_field_max_time_check.dart';
 import 'package:stewart_platform_control/core/io/controller/package/app_data_field/axes/three/validation/three_axes_data_field_max_positions_check.dart';
+import 'package:stewart_platform_control/core/io/controller/package/app_data_field/axes/three/validation/three_axes_data_field_min_positions_check.dart';
 import 'package:stewart_platform_control/core/io/controller/package/app_data_field/axes/three/validation/three_axes_data_field_min_time_check.dart';
 import 'package:stewart_platform_control/core/io/controller/package/app_data_field/registers/reg_data_field.dart';
 import 'package:stewart_platform_control/core/io/controller/package/app_who_field/app_who_field.dart';
@@ -43,12 +44,13 @@ import 'package:stewart_platform_control/core/validation/validation_cases.dart';
 ///
 class MdboxController {
   static const _positionFactor = 1000000;
-  static const _threeAxesValidation = ValidationCases<ThreeAxesDataField>(
+  static const _threeAxesDataChecks = ValidationCases<ThreeAxesDataField>(
     cases: [
       ThreeAxesDataFieldMinTimeCheck(minTime: Duration(milliseconds: 1)),
       ThreeAxesDataFieldMaxTimeCheck(maxTime: Duration(seconds: 30)),
-      ThreeAxesDataMaxPositionsCheck(maxPosition: 800 * _positionFactor),
-      ThreeAxesDataPositionsDeltaCheck(maxDelta: 400 * _positionFactor),
+      ThreeAxesDataMinPositionsCheck(minPosition: 0),
+      ThreeAxesDataMaxPositionsCheck(maxPosition: 800000),
+      ThreeAxesDataPositionsDeltaCheck(maxDelta: 400000),
     ],
   );
   final NetAddress _myAddress;
@@ -91,7 +93,7 @@ class MdboxController {
         z: (lengths.cilinder2 * _positionFactor).round(),
       ),
     );
-    if(_threeAxesValidation.isSatisfiedBy(dataField)) {
+    if(_threeAxesDataChecks.isSatisfiedBy(dataField)) {
       final udpData = UdpData(
         controlField: AppControlField.def(
           functionCode: const FunctionCode.fromIterable(deltaTimePlayAll),
