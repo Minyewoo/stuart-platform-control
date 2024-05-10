@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hmi_core/hmi_core.dart';
-import 'package:stewart_platform_control/core/entities/cilinders_extractions.dart';
+import 'package:stewart_platform_control/core/entities/cilinders_extractions_3f.dart';
 import 'package:stewart_platform_control/core/math/mapping/fluctuation_lengths_mapping.dart';
 import 'package:stewart_platform_control/core/math/sine.dart';
 import 'package:vector_math/vector_math_64.dart';
