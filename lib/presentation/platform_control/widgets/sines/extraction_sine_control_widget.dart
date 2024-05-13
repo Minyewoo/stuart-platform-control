@@ -2,31 +2,36 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:stewart_platform_control/core/math/min_max.dart';
 import 'package:stewart_platform_control/core/math/sine.dart';
-import 'package:stewart_platform_control/presentation/platform_control/widgets/parameter_slider.dart';
-import 'package:stewart_platform_control/presentation/platform_control/widgets/sine_chart.dart';
+import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/parameter_slider.dart';
+import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/sine_chart.dart';
+import 'package:vector_math/vector_math_64.dart';
 ///
-class SineControlWidget extends StatelessWidget {
-  final double _cilinderMaxHeight;
-  final MinMax _amplitudeConstraints;
-  final MinMax _perionConstraints;
-  final MinMax _phaseShiftConstraints;
-  final String _title;
+class ExtractionSineControlWidget extends StatelessWidget {
+  final MinMax<double> _amplitudeConstraints;
+  final MinMax<double> _perionConstraints;
+  final MinMax<double> _phaseShiftConstraints;
+  final Widget? _title;
   final ValueNotifier<Sine> _sineNotifier;
   final ValueNotifier<MinMax> _minMaxNotifier;
+  final bool _isDisabled;
   ///
-  const SineControlWidget({
+  const ExtractionSineControlWidget({
     super.key, 
     required ValueNotifier<Sine> sineNotifier,
-    required ValueNotifier<MinMax> minMaxNotifier, 
-    String title = '', required double cilinderMaxHeight, required MinMax amplitudeConstraints, required MinMax perionConstraints, required MinMax phaseShiftConstraints,
+    required MinMax<double> amplitudeConstraints,
+    required MinMax<double> perionConstraints,
+    required MinMax<double> phaseShiftConstraints,
+    required ValueNotifier<MinMax> minMaxNotifier,
+    Widget? title,
+    bool isDisabled = false,
   }) : 
     _phaseShiftConstraints = phaseShiftConstraints,
     _perionConstraints = perionConstraints,
     _amplitudeConstraints = amplitudeConstraints,
-    _cilinderMaxHeight = cilinderMaxHeight, 
     _title = title,
-    _sineNotifier = sineNotifier,
-    _minMaxNotifier = minMaxNotifier;
+    _isDisabled = isDisabled,
+    _minMaxNotifier = minMaxNotifier,
+    _sineNotifier = sineNotifier;
   //
   @override
   Widget build(BuildContext context) {
@@ -34,13 +39,10 @@ class SineControlWidget extends StatelessWidget {
       children: [
         Row(
           children: [
-            if(_title.isNotEmpty)
+            if(_title != null)
               ...[
                 const SizedBox(width: 16),
-                Text(
-                  _title,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
+                _title,
               ],
             Expanded(
               flex: 1,
@@ -50,21 +52,18 @@ class SineControlWidget extends StatelessWidget {
                     child: ValueListenableBuilder(
                       valueListenable: _sineNotifier,
                       builder: (context, sine, child) {
-                        final remainingHeight = _cilinderMaxHeight - sine.baseline;
                         return ParameterSlider(
                           label: 'Амплитуда',
                           valueNotifier: _sineNotifier,
                           minMax: MinMax(
                             min: _amplitudeConstraints.min,
-                            max: remainingHeight > _amplitudeConstraints.max
-                              ? _amplitudeConstraints.max
-                              : remainingHeight,
-                            ),
+                            max: _amplitudeConstraints.max,
+                          ),
                           divisions: (_amplitudeConstraints.max - _amplitudeConstraints.min).floor(),
-                          sliderValueBuilder: (sine) => sine.amplitude,
-                          displayValueBuilder: (sine) => sine.amplitude.toStringAsFixed(0),
-                          valueUnit: ' мм',
-                          onChanged: _changeAmplitude,
+                          sliderValueBuilder: (sine) => sine.amplitude*1000,
+                          displayValueBuilder: (sine) => (sine.amplitude*1000).toStringAsFixed(0),
+                          valueUnit: 'мм',
+                          onChanged: _isDisabled ? null : _changeAmplitude,
                         );
                       }
                     ),
@@ -78,7 +77,7 @@ class SineControlWidget extends StatelessWidget {
                       sliderValueBuilder: (sine) => sine.period,
                       displayValueBuilder: (sine) => sine.period.toStringAsFixed(0),
                       valueUnit: ' с',
-                      onChanged: _changePeriod,
+                      onChanged: _isDisabled ? null : _changePeriod,
                     ),
                   ),
                   Expanded(
@@ -86,26 +85,31 @@ class SineControlWidget extends StatelessWidget {
                       label: 'Сдвиг фазы',
                       valueNotifier: _sineNotifier,
                       minMax: _phaseShiftConstraints,
-                      divisions: (_phaseShiftConstraints.max - _phaseShiftConstraints.min).floor(),
-                      sliderValueBuilder: (sine) => double.parse((sine.phaseShift*180/pi).toStringAsFixed(0)),
-                      displayValueBuilder: (sine) => (sine.phaseShift*180/pi).toStringAsFixed(0),
+                      divisions: ((_phaseShiftConstraints.max - _phaseShiftConstraints.min)/5).floor(),
+                      sliderValueBuilder: (sine) => double.parse((sine.phaseShift*radians2Degrees).toStringAsFixed(0)),
+                      displayValueBuilder: (sine) => (sine.phaseShift*radians2Degrees).toStringAsFixed(0),
                       valueUnit: '°',
-                      onChanged: _changePhaseShift,
+                      onChanged: _isDisabled ? null : _changePhaseShift,
                     ),
                   ),
                   Expanded(
                     child: ValueListenableBuilder(
-                      valueListenable: _sineNotifier,
-                      builder: (context, sine, child) => ParameterSlider(
-                        label: 'Середина',
-                        valueNotifier: _sineNotifier,
-                        minMax: MinMax(min: _sineNotifier.value.amplitude, max: _cilinderMaxHeight-_sineNotifier.value.amplitude),
-                        divisions: (_cilinderMaxHeight-_sineNotifier.value.amplitude*2+1).round(),
-                        sliderValueBuilder: (sine) => sine.baseline,
-                        displayValueBuilder: (sine) => sine.baseline.toStringAsFixed(0),
-                        valueUnit: ' мм',
-                        onChanged: _changeBaseline,
-                      ),
+                      valueListenable: _minMaxNotifier,
+                      builder: (context, minMax, child) {
+                        return ParameterSlider(
+                          label: 'Среднее',
+                          valueNotifier: _sineNotifier,
+                          minMax: MinMax(
+                            min: minMax.min,
+                            max: minMax.max,
+                          ),
+                          divisions: (minMax.max - minMax.min).floor(),
+                          sliderValueBuilder: (sine) => sine.baseline*1000,
+                          displayValueBuilder: (sine) => (sine.baseline*1000).toStringAsFixed(0),
+                          valueUnit: 'мм',
+                          onChanged: _isDisabled ? null : _changeBaseline,
+                        );
+                      }
                     ),
                   ),
                 ],
@@ -116,7 +120,6 @@ class SineControlWidget extends StatelessWidget {
         Expanded(
           child: SineChart(
             sineNotifier: _sineNotifier,
-            minMaxNotifier: _minMaxNotifier,
             periodWindow: _perionConstraints.max.floor(),
             pointsCountFactor: 30,
           ),
@@ -127,13 +130,13 @@ class SineControlWidget extends StatelessWidget {
   //
   void _changeAmplitude(double value) {
     _sineNotifier.value = _sineNotifier.value.copyWith(
-      amplitude: value,
+      amplitude: value/1000,
     );
   }
   //
   void _changeBaseline(double value) {
     _sineNotifier.value = _sineNotifier.value.copyWith(
-      baseline: value,
+      baseline: value/1000,
     );
   }
   //

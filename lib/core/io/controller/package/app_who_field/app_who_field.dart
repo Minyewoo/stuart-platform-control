@@ -17,6 +17,11 @@ class AppWhoField implements ByteSequence {
     .followedBy(whoReply.bytes),
   );
   ///
+  AppWhoField.all() : this._(
+    const Who.all().bytes
+    .followedBy(const Who.all().bytes),
+  );
+  ///
   Who get whoAccept => Who.fromIterable(_bytes.take(2));
   ///
   Who get whoReply =>  Who.fromIterable(_bytes.skip(2).take(2));

@@ -13,7 +13,7 @@ class SixAxesDataField implements AppDataField {
   factory SixAxesDataField({
     required int lineNumber,
     required int time,
-    required Position6f position,
+    required Position6i position,
     ByteSequence baseDout = const ByteSequence.fromIterable([0x12, 0x34]),
     ByteSequence dac1_2 = const ByteSequence.fromIterable([0x56, 0x78, 0xab, 0xcd]),
     ByteSequence extDout = const ByteSequence.fromIterable([]),
@@ -30,7 +30,7 @@ class SixAxesDataField implements AppDataField {
   ///
   int get time => _bytes.skip(4).take(4).reduce((value, element) => value | element);
   ///
-  Position6f get position => Position6f.fromIterable(_bytes.skip(8).take(24));
+  Position6i get position => Position6i.fromIterable(_bytes.skip(8).take(24));
   ///
   ByteSequence get baseDout => ByteSequence.fromIterable(_bytes.skip(32).take(2));
   ///

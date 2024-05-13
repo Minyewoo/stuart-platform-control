@@ -13,7 +13,7 @@ class ThreeAxesDataField implements AppDataField {
   factory ThreeAxesDataField({
     required int lineNumber,
     required int time,
-    required Position3f position,
+    required Position3i position,
     ByteSequence baseDout = const ByteSequence.fromIterable([0x12, 0x34]),
     ByteSequence dac1_2 = const ByteSequence.fromIterable([0x56, 0x78, 0xab, 0xcd]),
     ByteSequence extDout = const ByteSequence.fromIterable([]),
@@ -30,7 +30,7 @@ class ThreeAxesDataField implements AppDataField {
   ///
   int get time => _bytes.skip(4).take(4).reduce((value, element) => value | element);
   ///
-  Position3f get position => Position3f.fromIterable(_bytes.skip(8).take(12));
+  Position3i get position => Position3i.fromIterable(_bytes.skip(8).take(12));
   ///
   ByteSequence get baseDout => ByteSequence.fromIterable(_bytes.skip(20).take(2));
   ///

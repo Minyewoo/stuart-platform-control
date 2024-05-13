@@ -13,13 +13,23 @@ dependencies:
     git:
       url: https://github.com/a-givertzman/hmi_core.git
       ref: 2.0.0
+  hmi_widgets:
+    git:
+      url: https://github.com/a-givertzman/hmi_widgets.git
+      ref: 1.0.1
+  cma_registrator:
+    git:
+      url: https://github.com/a-givertzman/cma_registrator.git
+      ref: 0.0.2
   fl_chart:
     git:
       url: https://github.com/a-givertzman/fl_chart.git
       ref: 0.63.0+2
   shared_preferences: ^2.2.3
-  toastification: ^1.2.1
   window_manager: ^0.3.8
+  ditredi: ^2.0.2
+  vector_math: ^2.1.4
+  flutter_math_fork: ^0.7.2
 
 dev_dependencies:
   flutter_test:
@@ -30,11 +40,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/sine.svg
-    - assets/sine_rounded.png
+    - assets/configs/
+    - assets/visuals/
 
 flutter_launcher_icons:
-  image_path:  "assets/sine_rounded.png"
+  image_path:  "assets/visuals/sine_rounded.png"
   windows:
     generate: true
     icon_size: 256 # min:48, max:256, default: 48

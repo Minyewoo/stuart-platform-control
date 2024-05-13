@@ -1,13 +1,15 @@
 import 'dart:math';
+import 'package:stewart_platform_control/core/math/mapping/mapping.dart';
 import 'package:stewart_platform_control/core/math/min_max.dart';
 
 /// 
 /// Parameterized sine function
-class Sine {
+class Sine implements MinMaxedMapping<double, double> {
   final double amplitude;
   final double period;
   final double phaseShift;
   final double baseline;
+  final bool alwaysGreaterThanZero;
   /// 
   /// Parameterized sine function
   const Sine({
@@ -15,7 +17,10 @@ class Sine {
     this.period = 5.0,
     this.phaseShift = 0.0,
     double? baseline,
-  }) : baseline = baseline != null ? (amplitude > baseline ? amplitude : baseline) : amplitude;
+    this.alwaysGreaterThanZero=false,
+  }) : baseline = baseline != null 
+    ? ((amplitude > baseline && alwaysGreaterThanZero) ? amplitude : baseline) 
+    : amplitude;
   ///
   /// Create new instance of [Sine] with slightly different parameters.
   Sine copyWith({
@@ -23,19 +28,25 @@ class Sine {
     double? period,
     double? phaseShift,
     double? baseline,
+    bool? alwaysGreaterThanZero,
   }) => Sine(
     amplitude: amplitude ?? this.amplitude,
     period: period ?? this.period,
     phaseShift: phaseShift ?? this.phaseShift,
-    baseline: baseline ?? (this.baseline < (amplitude ?? this.amplitude) ? (amplitude ?? this.amplitude) : this.baseline),
+    alwaysGreaterThanZero: alwaysGreaterThanZero ?? this.alwaysGreaterThanZero,
+    baseline: baseline ?? (
+      (this.baseline < (amplitude ?? this.amplitude) && (alwaysGreaterThanZero ?? this.alwaysGreaterThanZero)) 
+        ? (amplitude ?? this.amplitude) 
+        : this.baseline),
   );
   /// 
   /// Compute sine value of [t].
+  @override
   double of(double t) => amplitude * sin(2*pi*t/period + phaseShift) + baseline;
-
   ///
   /// Compute minimum and maximum values of the sine function.
-  MinMax get minMax {
+  @override
+  MinMax<double> get minMax {
     final factor = period/(2*pi);
     const halfPi = pi/2;
     final t_0_1 = (-halfPi - phaseShift)*factor;
