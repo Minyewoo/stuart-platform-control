@@ -5,9 +5,9 @@ class Config {
   final NetAddress myAddress;
   final NetAddress controllerAddress;
   final double cilinderMaxHeight;
-  final MinMax amplitudeConstraints;
-  final MinMax periodConstraints;
-  final MinMax phaseShiftConstraints;
+  final MinMax<double> amplitudeConstraints;
+  final MinMax<double> periodConstraints;
+  final MinMax<double> phaseShiftConstraints;
   final Duration controlFrequency;
   ///
   const Config({

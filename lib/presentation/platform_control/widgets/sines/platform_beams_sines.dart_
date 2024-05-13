@@ -7,9 +7,9 @@ import 'package:stewart_platform_control/presentation/platform_control/widgets/s
 ///
 class PlatformBeamsSines extends StatelessWidget {
   final double _cilinderMaxHeight;
-  final MinMax _amplitudeConstraints;
-  final MinMax _periodConstraints;
-  final MinMax _phaseShiftConstraints;
+  final MinMax<double> _amplitudeConstraints;
+  final MinMax<double> _periodConstraints;
+  final MinMax<double> _phaseShiftConstraints;
   final SineNotifier _axisXSineNotifier;
   final MinMaxNotifier _minMaxNotifier;
   final SineNotifier _axisYSineNotifier;
@@ -22,9 +22,9 @@ class PlatformBeamsSines extends StatelessWidget {
     required SineNotifier axisYSineNotifier,
     required SineNotifier axisZSineNotifier,
     required double cilinderMaxHeight,
-    required MinMax amplitudeConstraints,
-    required MinMax periodConstraints,
-    required MinMax phaseShiftConstraints,
+    required MinMax<double> amplitudeConstraints,
+    required MinMax<double> periodConstraints,
+    required MinMax<double> phaseShiftConstraints,
   }) :
     _axisXSineNotifier = axisXSineNotifier,
     _minMaxNotifier = minMaxNotifier,

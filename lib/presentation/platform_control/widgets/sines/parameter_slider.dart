@@ -4,7 +4,7 @@ import 'package:stewart_platform_control/core/math/min_max.dart';
 ///
 class ParameterSlider<T> extends StatelessWidget {
   final int? _divisions;
-  final MinMax _minMax;
+  final MinMax<double> _minMax;
   final String _label;
   final String _valueUnit;
   final ValueNotifier<T> _valueNotifier;
@@ -17,7 +17,7 @@ class ParameterSlider<T> extends StatelessWidget {
     required ValueNotifier<T> valueNotifier,
     required double Function(T value) sliderValueBuilder, 
     String Function(T value)? displayValueBuilder,
-    required MinMax minMax,
+    required MinMax<double> minMax,
     String label = '', 
     String valueUnit = '', 
     int? divisions, 
@@ -60,7 +60,6 @@ class ParameterSlider<T> extends StatelessWidget {
               ],
             ),
             Slider(
-              
               value: sliderValue,
               min: _minMax.min,
               max: _minMax.max,

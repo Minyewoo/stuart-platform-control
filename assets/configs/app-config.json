@@ -9,18 +9,18 @@
     },
     "cilinderMaxHeight": 900,
     "amplitudeConstraints": {
-        "min": 0,
-        "max": 300
+        "min": 0.0,
+        "max": 300.0
     },
     "periodConstraints": {
-        "min": 1,
-        "max": 15
+        "min": 1.0,
+        "max": 15.0
     },
     "phaseShiftConstraints": {
-        "min": 0,
-        "max": 180
+        "min": 0.0,
+        "max": 180.0
     },
     "controlFrequency": {
-        "milliseconds": 10
+        "milliseconds": 100
     }
 }

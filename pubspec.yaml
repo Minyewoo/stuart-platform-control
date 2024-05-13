@@ -26,10 +26,10 @@ dependencies:
       url: https://github.com/a-givertzman/fl_chart.git
       ref: 0.63.0+2
   shared_preferences: ^2.2.3
-  toastification: ^1.0.0
   window_manager: ^0.3.8
   ditredi: ^2.0.2
   vector_math: ^2.1.4
+  flutter_math_fork: ^0.7.2
 
 dev_dependencies:
   flutter_test:

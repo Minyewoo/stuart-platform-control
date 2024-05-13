@@ -7,10 +7,10 @@ import 'package:stewart_platform_control/presentation/platform_control/widgets/s
 import 'package:vector_math/vector_math_64.dart';
 ///
 class ExtractionSineControlWidget extends StatelessWidget {
-  final MinMax _amplitudeConstraints;
-  final MinMax _perionConstraints;
-  final MinMax _phaseShiftConstraints;
-  final String _title;
+  final MinMax<double> _amplitudeConstraints;
+  final MinMax<double> _perionConstraints;
+  final MinMax<double> _phaseShiftConstraints;
+  final Widget? _title;
   final ValueNotifier<Sine> _sineNotifier;
   final ValueNotifier<MinMax> _minMaxNotifier;
   final bool _isDisabled;
@@ -18,11 +18,11 @@ class ExtractionSineControlWidget extends StatelessWidget {
   const ExtractionSineControlWidget({
     super.key, 
     required ValueNotifier<Sine> sineNotifier,
-    required MinMax amplitudeConstraints,
-    required MinMax perionConstraints,
-    required MinMax phaseShiftConstraints,
+    required MinMax<double> amplitudeConstraints,
+    required MinMax<double> perionConstraints,
+    required MinMax<double> phaseShiftConstraints,
     required ValueNotifier<MinMax> minMaxNotifier,
-    String title = '',
+    Widget? title,
     bool isDisabled = false,
   }) : 
     _phaseShiftConstraints = phaseShiftConstraints,
@@ -39,13 +39,10 @@ class ExtractionSineControlWidget extends StatelessWidget {
       children: [
         Row(
           children: [
-            if(_title.isNotEmpty)
+            if(_title != null)
               ...[
                 const SizedBox(width: 16),
-                Text(
-                  _title,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
+                _title,
               ],
             Expanded(
               flex: 1,

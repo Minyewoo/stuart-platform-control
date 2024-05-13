@@ -7,10 +7,10 @@ import 'package:vector_math/vector_math_64.dart';
 ///
 class AngleSineControlWidget extends StatelessWidget {
   final Color? _sineColor;
-  final MinMax _amplitudeConstraints;
-  final MinMax _perionConstraints;
-  final MinMax _phaseShiftConstraints;
-  final String _title;
+  final MinMax<double> _amplitudeConstraints;
+  final MinMax<double> _perionConstraints;
+  final MinMax<double> _phaseShiftConstraints;
+  final Widget? _title;
   final ValueNotifier<Sine> _sineNotifier;
   final ValueNotifier<MinMax>? _amplitudeMinMaxNotifier;
   final bool _isDisabled;
@@ -18,12 +18,12 @@ class AngleSineControlWidget extends StatelessWidget {
   const AngleSineControlWidget({
     super.key, 
     required ValueNotifier<Sine> sineNotifier,
-    required MinMax amplitudeConstraints,
-    required MinMax perionConstraints,
-    required MinMax phaseShiftConstraints,
+    required MinMax<double> amplitudeConstraints,
+    required MinMax<double> perionConstraints,
+    required MinMax<double> phaseShiftConstraints,
     Color? sineColor,
     ValueNotifier<MinMax>? minMaxNotifier,
-    String title = '',
+    Widget? title,
     bool isDisabled = false,
   }) :
     _sineColor = sineColor,
@@ -41,13 +41,10 @@ class AngleSineControlWidget extends StatelessWidget {
       children: [
         Row(
           children: [
-            if(_title.isNotEmpty)
+            if(_title != null)
               ...[
                 const SizedBox(width: 16),
-                Text(
-                  _title,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
+                _title
               ],
             Expanded(
               flex: 1,
@@ -61,7 +58,7 @@ class AngleSineControlWidget extends StatelessWidget {
                           minMax: _amplitudeConstraints,
                           label: 'Амплитуда',
                           valueNotifier: _sineNotifier,
-                          divisions: (_amplitudeConstraints.max - _amplitudeConstraints.min).floor(),
+                          divisions: (_amplitudeConstraints.max - _amplitudeConstraints.min).ceil(),
                           sliderValueBuilder: (sine) => double.parse((sine.amplitude*radians2Degrees).toStringAsFixed(0)),
                           displayValueBuilder: (sine) => (sine.amplitude*radians2Degrees).toStringAsFixed(0),
                           valueUnit: '°',
@@ -75,7 +72,7 @@ class AngleSineControlWidget extends StatelessWidget {
                       label: 'Период',
                       valueNotifier: _sineNotifier,
                       minMax: _perionConstraints,
-                      divisions: (_perionConstraints.max - _perionConstraints.min).floor(),
+                      divisions: (_perionConstraints.max - _perionConstraints.min).ceil(),
                       sliderValueBuilder: (sine) => sine.period,
                       displayValueBuilder: (sine) => sine.period.toStringAsFixed(0),
                       valueUnit: ' с',
@@ -87,7 +84,7 @@ class AngleSineControlWidget extends StatelessWidget {
                       label: 'Сдвиг фазы',
                       valueNotifier: _sineNotifier,
                       minMax: _phaseShiftConstraints,
-                      divisions: ((_phaseShiftConstraints.max - _phaseShiftConstraints.min)/5).floor(),
+                      divisions: ((_phaseShiftConstraints.max - _phaseShiftConstraints.min)/5).ceil(),
                       sliderValueBuilder: (sine) => double.parse((sine.phaseShift*radians2Degrees).toStringAsFixed(0)),
                       displayValueBuilder: (sine) => (sine.phaseShift*radians2Degrees).toStringAsFixed(0),
                       valueUnit: '°',

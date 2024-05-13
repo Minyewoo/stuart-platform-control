@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:stewart_platform_control/core/math/min_max.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/angle_sine_control_widget.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/extraction_sine_control_widget.dart';
@@ -33,19 +34,19 @@ class PlatformAngleSines extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const chartsPadding = EdgeInsets.only(top: 8.0, right: 16.0);
-    const angleAmplitudeConstraints = MinMax(
+    const angleAmplitudeConstraints = MinMax<double>(
       min: 0,
       max: 20,
     );
-    const baselineAmplitudeConstraints = MinMax(
+    const baselineAmplitudeConstraints = MinMax<double>(
       min: 0,
       max: 400,
     );
-    const periodConstraints = MinMax(
+    const periodConstraints = MinMax<double>(
       min: 1,
       max: 10,
     );
-    const phaseShiftConstraints = MinMax(
+    const phaseShiftConstraints = MinMax<double>(
       min: 0,
       max: 180,
     );
@@ -63,7 +64,10 @@ class PlatformAngleSines extends StatelessWidget {
                 amplitudeConstraints: angleAmplitudeConstraints,
                 perionConstraints: periodConstraints,
                 phaseShiftConstraints: phaseShiftConstraints,
-                title: 'φ_y',
+                title: Math.tex(
+                  '\\varphi_y',
+                  textScaleFactor: 2,
+                ).build(context),
                 sineNotifier: _rotationAngleY,
                 isDisabled: _isDisabled,
               ),
@@ -78,7 +82,10 @@ class PlatformAngleSines extends StatelessWidget {
                 amplitudeConstraints: angleAmplitudeConstraints,
                 perionConstraints: periodConstraints,
                 phaseShiftConstraints: phaseShiftConstraints,
-                title: 'φ_x',
+                title: Math.tex(
+                  '\\varphi_x',
+                  textScaleFactor: 2,
+                ).build(context),
                 sineNotifier: _rotationAngleX,
                 isDisabled: _isDisabled,
               ),
@@ -92,7 +99,10 @@ class PlatformAngleSines extends StatelessWidget {
                 amplitudeConstraints: baselineAmplitudeConstraints,
                 perionConstraints: periodConstraints,
                 phaseShiftConstraints: phaseShiftConstraints,
-                title: 'Уровень',
+                title: Math.tex(
+                  'L',
+                  textScaleFactor: 2,
+                ).build(context),
                 sineNotifier: _baseline,
                 isDisabled: _isDisabled,
               ),

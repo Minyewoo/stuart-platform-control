@@ -3,7 +3,7 @@ import 'package:stewart_platform_control/core/math/min_max.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/fluctuation_center/fluctuation_side_projection.dart';
 ///
 class FluctuationCenterPickerBuilder extends StatelessWidget {
-  final MinMax _borderValues;
+  final MinMax<double> _borderValues;
   final ValueNotifier<Offset> _fluctuationCenter;
   final double _realPlatformDimention;
   final double _centerOffset;

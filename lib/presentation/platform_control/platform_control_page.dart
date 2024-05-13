@@ -7,7 +7,6 @@ import 'package:stewart_platform_control/core/entities/cilinders_extractions_3f.
 import 'package:stewart_platform_control/core/io/controller/mdbox_controller.dart';
 import 'package:stewart_platform_control/core/math/mapping/fluctuation_lengths_mapping.dart';
 import 'package:stewart_platform_control/core/math/mapping/time_mapping.dart';
-import 'package:stewart_platform_control/core/math/mapping/mapping.dart';
 import 'package:stewart_platform_control/core/math/min_max.dart';
 import 'package:stewart_platform_control/core/math/sine.dart';
 import 'package:stewart_platform_control/core/platform/platform_state.dart';
@@ -19,7 +18,6 @@ import 'package:stewart_platform_control/presentation/platform_control/widgets/s
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/platform_angle_sines.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/platform_control_app_bar.dart';
 import 'package:stewart_platform_control/presentation/platform_control/widgets/sines/sine_notifier.dart';
-import 'package:stewart_platform_control/presentation/popups/toasts.dart';
 ///
 class PlatformControlPage extends StatefulWidget {
   final double _cilinderMaxHeight;
@@ -55,6 +53,7 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
   late final ValueNotifier<Offset> _fluctuationCenterNotifier;
   late final StewartPlatform _platform;
   late final Stream<DsDataPoint<double>> _lengthsStream;
+  final StreamController<String> _messagesController = StreamController<String>.broadcast();
   late bool _isPlatformMoving;
   //
   @override
@@ -83,7 +82,7 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
     final angleXMinMax = _rotationAngleX.value.minMax;
     final angleYMinMax = _rotationAngleY.value.minMax;
     _angleMinMaxNotifier = MinMaxNotifier(
-      minMax: MinMax(
+      minMax: MinMax<double>(
         min: min(angleXMinMax.min, angleYMinMax.min),
         max: max(angleXMinMax.max, angleYMinMax.max),
       ),
@@ -97,7 +96,7 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
     _rotationAngleX.addListener(() {
       final newMinMax = _rotationAngleX.value.minMax;
       final currentYMinMax = _rotationAngleY.value.minMax;
-      _angleMinMaxNotifier.value = MinMax(
+      _angleMinMaxNotifier.value = MinMax<double>(
         min: min(newMinMax.min, currentYMinMax.min),
         max: max(newMinMax.max, currentYMinMax.max),
       );
@@ -105,7 +104,7 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
      _rotationAngleY.addListener(() {
       final newYMinMax = _rotationAngleY.value.minMax;
       final currentXMinMax = _rotationAngleX.value.minMax;
-      _angleMinMaxNotifier.value = MinMax(
+      _angleMinMaxNotifier.value = MinMax<double>(
         min: min(newYMinMax.min, currentXMinMax.min),
         max: max(newYMinMax.max, currentXMinMax.max),
       );
@@ -124,7 +123,9 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
           _isPlatformMoving = false;
         });
       },
-      onStatusReport: (message) => showInfo(message, context),
+      onStatusReport: (message) {
+        _messagesController.add(message);
+      },
     );
     _lengthsStream = _platform.state.transform(
       StreamTransformer.fromHandlers(
@@ -157,87 +158,93 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
     _baseline.dispose();
     _fluctuationCenterNotifier.dispose();
     _platform.dispose();
+    _messagesController.close();
     super.dispose();
   }
   //
   @override
   Widget build(BuildContext context) {
     const horizontalRadius = cilindersPlacementRadius*sqrt3/2;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return Scaffold(
-          appBar: PlatformControlAppBar(
-            onSave: () {}, //_saveValues,
-            onStartFluctuations:  _onStartFluctuations,
-            onInitialPositionRequest: _platform.setBeamsToInitialPositions,
-            onPlatformStop: _platform.stop,
-            isPlatformMoving: _isPlatformMoving,
-          ),
-          body: Row(
-            children: [
-              Expanded(
-                flex: 3,
-                child: AnimatedSwitcher(
-                  switchInCurve: Curves.easeIn,
-                  switchOutCurve: Curves.easeOut,
-                  duration: const Duration(milliseconds: 300),
-                  transitionBuilder: (child, animation) => ScaleTransition(
-                    scale: animation,
-                    child: FadeTransition(
-                      opacity: animation,
-                      child: child,
-                    ),
-                  ),
-                  child: switch(_isPlatformMoving) {
-                    true => LiveChartWidget(
-                      minX: DateTime.now().subtract(const Duration(seconds: 6))
-                        .millisecondsSinceEpoch.toDouble(),
-                      xInterval: 6000,
-                      axes: [
-                        LiveAxis(
-                          bufferLength: 4000,
-                          stream: _lengthsStream,
-                          signalName: 'cilinder0',
-                          caption: 'Цилиндр I',
-                          color: Colors.purpleAccent,
-                        ),
-                        LiveAxis(
-                          bufferLength: 4000,
-                          stream: _lengthsStream,
-                          signalName: 'cilinder1',
-                          caption: 'Цилиндр II',
-                          color: Colors.greenAccent,
-                        ),
-                        LiveAxis(
-                          bufferLength: 4000,
-                          stream: _lengthsStream,
-                          signalName: 'cilinder2',
-                          caption: 'Цилиндр III',
-                          color: Colors.orangeAccent,
-                        ),
-                      ],
-                    ),
-                    false => PlatformAngleSines(
-                      baselineMinMax: _baselineMinMaxNotifier,
-                      anglesMinMax: _angleMinMaxNotifier,  
-                      isDisabled: _isPlatformMoving,              
-                      rotationAngleX: _rotationAngleX,
-                      rotationAngleY: _rotationAngleY,
-                      baseline: _baseline,
-                    ),
-                  },
+    return Scaffold(
+      appBar: PlatformControlAppBar(
+        messagesStream: _messagesController.stream,
+        onSave: () {}, //_saveValues,
+        onStartFluctuations:  _onStartFluctuations,
+        onZeroPositionRequest: _onZeroPos,
+        onMaxPositionRequest: _onMaxPos,
+        onMinPositionRequest: _onMinPos,
+        onPlatformStop: _platform.stop,
+        isPlatformMoving: _isPlatformMoving,
+      ),
+      body: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: AnimatedSwitcher(
+              switchInCurve: Curves.easeIn,
+              switchOutCurve: Curves.easeOut,
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (child, animation) => ScaleTransition(
+                scale: animation,
+                child: FadeTransition(
+                  opacity: animation,
+                  child: child,
                 ),
               ),
-              Expanded(
-                flex: 1,
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Row(
+              child: switch(_isPlatformMoving) {
+                true => LiveChartWidget(
+                  minX: DateTime.now().subtract(const Duration(seconds: 6))
+                    .millisecondsSinceEpoch.toDouble(),
+                  xInterval: 6000,
+                  axes: [
+                    LiveAxis(
+                      bufferLength: 4000,
+                      stream: _lengthsStream,
+                      signalName: 'cilinder0',
+                      caption: 'Цилиндр I',
+                      color: Colors.purpleAccent,
+                    ),
+                    LiveAxis(
+                      bufferLength: 4000,
+                      stream: _lengthsStream,
+                      signalName: 'cilinder1',
+                      caption: 'Цилиндр II',
+                      color: Colors.greenAccent,
+                    ),
+                    LiveAxis(
+                      bufferLength: 4000,
+                      stream: _lengthsStream,
+                      signalName: 'cilinder2',
+                      caption: 'Цилиндр III',
+                      color: Colors.orangeAccent,
+                    ),
+                  ],
+                ),
+                false => PlatformAngleSines(
+                  baselineMinMax: _baselineMinMaxNotifier,
+                  anglesMinMax: _angleMinMaxNotifier,  
+                  isDisabled: _isPlatformMoving,              
+                  rotationAngleX: _rotationAngleX,
+                  rotationAngleY: _rotationAngleY,
+                  baseline: _baseline,
+                ),
+              },
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isTight = constraints.maxWidth < 250;
+                        return Row(
                           children: [
+                            if (!isTight)
                             Expanded(
                               flex: 2,
                               child: Row(
@@ -300,14 +307,14 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
                                 ],
                               ),
                             ),
-                            const Spacer(),
+                            // const Spacer(),
                             Expanded(
                               flex: 3,
                               child: FluctuationCenterCoords(
                                 fluctuationCenter: _fluctuationCenterNotifier,
                               ),
                             ),
-                            const Spacer(),
+                            // const Spacer(),
                             Expanded(
                               flex: 2,
                               child: IconButton(
@@ -317,78 +324,123 @@ class _PlatformControlPageState extends State<PlatformControlPage> {
                                 icon: const Icon(Icons.cancel)),
                             ),
                           ],
-                        ),
-                        const SizedBox(height: 8),
-                        Expanded(
-                          child: FluctuationSideProjection(
-                            borderValues: const MinMax(
-                              min: -horizontalRadius, 
-                              max: horizontalRadius,
-                            ),
-                            isPlatformMoving: _isPlatformMoving,
-                            type: RotationAxis.y,
-                            realPlatformDimention: widget._realPlatformDimension,
-                            fluctuationCenter: _fluctuationCenterNotifier,
-                            platformState: _platform.state,
-                            pointSize: 9,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Expanded(
-                          child: FluctuationSideProjection(
-                            borderValues: const MinMax(
-                              min: -cilindersPlacementRadius/2, 
-                              max: cilindersPlacementRadius,
-                            ),
-                            isPlatformMoving: _isPlatformMoving,
-                            type: RotationAxis.x,
-                            realPlatformDimention: widget._realPlatformDimension,
-                            fluctuationCenter: _fluctuationCenterNotifier,
-                            platformState: _platform.state,
-                            pointSize: 9,
-                          ),
-                        ),
-                      ],
+                        );
+                      }
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: FluctuationSideProjection(
+                        borderValues: const MinMax(
+                          min: -horizontalRadius, 
+                          max: horizontalRadius,
+                        ),
+                        isPlatformMoving: _isPlatformMoving,
+                        type: RotationAxis.y,
+                        realPlatformDimention: widget._realPlatformDimension,
+                        fluctuationCenter: _fluctuationCenterNotifier,
+                        platformState: _platform.state,
+                        pointSize: 9,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: FluctuationSideProjection(
+                        borderValues: const MinMax(
+                          min: -cilindersPlacementRadius/2, 
+                          max: cilindersPlacementRadius,
+                        ),
+                        isPlatformMoving: _isPlatformMoving,
+                        type: RotationAxis.x,
+                        realPlatformDimention: widget._realPlatformDimension,
+                        fluctuationCenter: _fluctuationCenterNotifier,
+                        platformState: _platform.state,
+                        pointSize: 9,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
-  //
+  ///
   void _onStartFluctuations() {
     setState(() {
       _isPlatformMoving = true;
     });
     _platform.startFluctuations(
-      _generateFluctuationFunction(),
+      _generateFluctuationFunction(applyHeightOffset: true),
     );
   }
   ///
-  TimeMapping<PlatformState> _generateFluctuationFunction() {
-    final phiXSine = _rotationAngleX.value;
-    final phiYSine =  _rotationAngleY.value;
-    final lengthsFunction = FluctuationLengthsFunction(
-      fluctuationCenter: _fluctuationCenterNotifier.value,
-      phiXSine: phiXSine,
-      phiYSine: phiYSine,
-      baselineSine: _baseline.value,
+  Future<void> _onZeroPos() async {
+    setState(() {
+      _isPlatformMoving = true;
+    });
+    await _platform.setBeamsToZeroPositions();
+    await Future.delayed(const Duration(seconds: 2), () {
+      setState(() {
+        _isPlatformMoving = false;
+      });
+    });
+  }
+  ///
+  Future<void> _onMaxPos() async {
+    setState(() {
+      _isPlatformMoving = true;
+    });
+    await _platform.setBeamsToMaxAmplitudePositions(
+      _generateFluctuationFunction(applyHeightOffset: true),
     );
+    await Future.delayed(const Duration(seconds: 2), () {
+      setState(() {
+        _isPlatformMoving = false;
+      });
+    });
+  }
+  ///
+  Future<void> _onMinPos() async {
+    setState(() {
+      _isPlatformMoving = true;
+    });
+    await _platform.setBeamsToMinAmplitudePositions(
+      _generateFluctuationFunction(applyHeightOffset: true),
+    );
+    await Future.delayed(const Duration(seconds: 2), () {
+      setState(() {
+        _isPlatformMoving = false;
+      });
+    });
+  }
+  ///
+  TimeMapping<PlatformState> _generateFluctuationFunction({
+    required bool applyHeightOffset,
+  }) {
+    final baselineSine =  _baseline.value;
+    final fluctuationFunction = FluctuationLengthsFunction(
+      fluctuationCenter: _fluctuationCenterNotifier.value,
+      phiXSine: _rotationAngleX.value,
+      phiYSine: _rotationAngleY.value,
+      baselineSine: baselineSine,
+    );
+    final fluctuationMinPositions = fluctuationFunction.minMax.min.beamsPosition;
+    final lowerPosition = [
+      fluctuationMinPositions.cilinder1,
+      fluctuationMinPositions.cilinder2,
+      fluctuationMinPositions.cilinder3,
+    ].reduce(min);
+    final heightOffset = lowerPosition < 0 ? lowerPosition.abs() : 0.0;
     return TimeMapping(
-      mapping: Mapping.generic(
-        (seconds) {
-          final lengths = lengthsFunction.of(seconds);
-          return PlatformState(
-            beamsPosition: lengths,
-            fluctuationAngles: Offset(phiXSine.of(seconds), phiYSine.of(seconds)),
-          );
-        },
-      ),
-      frequency: const Duration(milliseconds: 10),
+      mapping: applyHeightOffset 
+        ? fluctuationFunction.copyWith(
+          baselineSine: baselineSine
+            .copyWith(baseline: baselineSine.baseline + heightOffset),
+        )
+        : fluctuationFunction,
+      frequency: const Duration(milliseconds: 50),
     );
   }
 }

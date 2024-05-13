@@ -4,7 +4,7 @@ import 'package:stewart_platform_control/core/math/min_max.dart';
 
 /// 
 /// Parameterized sine function
-class Sine implements Mapping<double, double> {
+class Sine implements MinMaxedMapping<double, double> {
   final double amplitude;
   final double period;
   final double phaseShift;
@@ -45,7 +45,8 @@ class Sine implements Mapping<double, double> {
   double of(double t) => amplitude * sin(2*pi*t/period + phaseShift) + baseline;
   ///
   /// Compute minimum and maximum values of the sine function.
-  MinMax get minMax {
+  @override
+  MinMax<double> get minMax {
     final factor = period/(2*pi);
     const halfPi = pi/2;
     final t_0_1 = (-halfPi - phaseShift)*factor;

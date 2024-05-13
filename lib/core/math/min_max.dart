@@ -1,17 +1,17 @@
 ///
-class MinMax {
-  final double min;
-  final double max;
+class MinMax<T> {
+  final T min;
+  final T max;
   ///
   const MinMax({
-    this.min = 0.0,
-    this.max = 0.0,
+    required this.min,
+    required this.max,
   });
   ///
-  factory MinMax.fromMap(Map<String, dynamic> map) {
+  factory MinMax.fromMap(Map<String,dynamic> map) {
     return MinMax(
-      min: double.parse('${map['min']}'),
-      max: double.parse('${map['max']}'),
+      min: map['min'] as T,
+      max: map['max'] as T,
     );
   }
   //

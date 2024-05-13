@@ -49,12 +49,47 @@ class StewartPlatform {
     }
   }
   ///
-  Future<void> setBeamsToInitialPositions({Duration time = const Duration(seconds: 10)}) async {
+  Future<void> setBeamsToZeroPositions({Duration time = const Duration(seconds: 10)}) async {
     _isStopped = false;
-    await _sendInitialPosition(time: time);
+    await _sendZeroPosition(time: time);
     _isStopped = true;
   }
-  Future<void> _sendInitialPosition({Duration time = const Duration(seconds: 10)}) async {
+  ///
+  Future<void> setBeamsToMaxAmplitudePositions(
+    TimeMapping<PlatformState> mapping, {
+    Duration time = const Duration(seconds: 10),
+  }) async {
+    _isStopped = false;
+    const rampTimeForMeter = Duration(seconds: 10);
+    await _sendZeroPosition(time: rampTimeForMeter);
+    if(!_isStopped) {
+      _onStatusReport?.call('Переход в максимальную позицию колебания');
+      _updatePlatformState(
+        mapping.minMax.max,
+        time: time,
+      );
+    }
+    _isStopped = true;
+  }
+  ///
+  Future<void> setBeamsToMinAmplitudePositions(
+    TimeMapping<PlatformState> mapping, {
+    Duration time = const Duration(seconds: 10),
+  }) async {
+    _isStopped = false;
+    const rampTimeForMeter = Duration(seconds: 10);
+    await _sendZeroPosition(time: rampTimeForMeter);
+    if(!_isStopped) {
+      _onStatusReport?.call('Переход в минимальную позицию колебания');
+      _updatePlatformState(
+        mapping.minMax.min,
+        time: time,
+      );
+    }
+    _isStopped = true;
+  }
+  ///
+  Future<void> _sendZeroPosition({Duration time = const Duration(seconds: 10)}) async {
     if(!_isStopped) {
       final initialPositioningtime = Duration(milliseconds: time.inMilliseconds);
       const zeroPosition = CilinderLengths3f();
@@ -72,7 +107,7 @@ class StewartPlatform {
   ///
   Future<void> _sendFluctuationStarterPositions(CilinderLengths3f lengths, Offset angles) async {
     const rampTimeForMeter = Duration(seconds: 10);
-    await _sendInitialPosition(time: rampTimeForMeter);
+    await _sendZeroPosition(time: rampTimeForMeter);
     if(!_isStopped) {
       final actualRampTime = Duration(
         milliseconds: (
@@ -93,7 +128,7 @@ class StewartPlatform {
   }
   ///
   void _updatePlatformState(PlatformState state, {
-    Duration time = const Duration(milliseconds: 1),
+    Duration time = const Duration(milliseconds: 50),
   }) {
     if(!_isStopped) {
       _controller.sendPosition3i(
@@ -105,6 +140,7 @@ class StewartPlatform {
   }
   ///
   void stop() {
+    _onStatusReport?.call('Колебания прерваны');
     _isStopped = true;
     _continousPosition?.stop();
     _onStopControl?.call();

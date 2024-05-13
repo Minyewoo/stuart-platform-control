@@ -67,10 +67,10 @@ void main() {
           ),
         );
         final cilinder1Result = double.parse(
-          lengthFunction.of(cilinder1Seconds).cilinder1.toStringAsFixed(4),
+          lengthFunction.of(cilinder1Seconds).beamsPosition.cilinder1.toStringAsFixed(4),
         );
         final cilinder3Result = double.parse(
-          lengthFunction.of(cilinder3Seconds).cilinder3.toStringAsFixed(4),
+          lengthFunction.of(cilinder3Seconds).beamsPosition.cilinder3.toStringAsFixed(4),
         );
         log.debug('[$title]');
         log.debug('(Cilinder 1) Expected: $cilinder1PosMeters; Got: $cilinder1Result');
@@ -146,10 +146,10 @@ void main() {
           ),
         );
         final cilinder2Result = double.parse(
-          lengthFunction.of(cilinder2Seconds).cilinder2.toStringAsFixed(4),
+          lengthFunction.of(cilinder2Seconds).beamsPosition.cilinder2.toStringAsFixed(4),
         );
         final cilinder3Result = double.parse(
-          lengthFunction.of(cilinder3Seconds).cilinder3.toStringAsFixed(4),
+          lengthFunction.of(cilinder3Seconds).beamsPosition.cilinder3.toStringAsFixed(4),
         );
         log.debug('[$title]');
         log.debug('(Cilinder 2) Expected: $cilinder2PosMeters; Got: $cilinder2Result');
