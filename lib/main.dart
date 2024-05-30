@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hmi_core/hmi_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -38,6 +39,7 @@ Future<void> main() async {
         MainApp(
           config: config,
           preferences: preferences,
+          chartsAppSocket: await RawDatagramSocket.bind(InternetAddress.loopbackIPv4, 4755),
         ),
       );
     },
