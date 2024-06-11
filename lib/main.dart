@@ -41,7 +41,10 @@ Future<void> main() async {
         MainApp(
           config: config,
           preferences: preferences,
-          chartsAppSocket: await RawDatagramSocket.bind(InternetAddress.loopbackIPv4, 4755),
+          chartsAppSocket: await RawDatagramSocket.bind(
+            config.chartsAppHost,
+            config.chartsAppPort,
+          ),
         ),
       );
     },
